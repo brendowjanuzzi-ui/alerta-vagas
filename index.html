@@ -16,7 +16,7 @@
     header { background: var(--dark); color: white; padding: 16px 24px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; }
     
     #main-container { display: flex; height: calc(100vh - 65px); }
-    #sidebar { width: 420px; background: var(--bg); padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); }
+    #sidebar { width: 420px; background: var(--bg); padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); z-index: 5; }
     #map { flex: 1; height: 100%; position: relative; }
 
     .section-box { background: var(--card); padding: 18px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
@@ -70,7 +70,7 @@
     </div>
 
     <div class="section-box">
-        <label style="font-size: 0.75rem; font-weight:700;">Busca em um raio de: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
+        <label style="font-size: 0.75rem; font-weight:700;">Ver vagas em um raio de: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
         <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="window.atualizarFiltros()">
         
         <div class="level-filters">
@@ -85,7 +85,7 @@
         <h4 style="margin-top:0">🏢 Postar Vaga</h4>
         <input type="text" id="emp-nome" placeholder="Empresa">
         <input type="text" id="emp-profissao" placeholder="Cargo">
-        <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">TOQUE NO MAPA PARA PUBLICAR</p>
+        <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">1. PREENCHA OS CAMPOS ACIMA<br>2. CLIQUE NO MAPA PARA PUBLICAR</p>
     </div>
 
     <div id="jobs-list"></div>
@@ -116,7 +116,7 @@
   const provider = new GoogleAuthProvider();
 
   let map, circleVisual, allVagas = [], markers = [], filtroNivel = 'Todos';
-  let userPos = { lat: -23.5505, lng: -46.6333 };
+  let userPos = { lat: -19.919, lng: -43.938 }; // Padrão BH
 
   window.loginGoogle = () => signInWithPopup(auth, provider);
   window.logout = () => signOut(auth);
@@ -146,21 +146,28 @@
         center: userPos, zoom: 14, disableDefaultUI: true 
     });
 
+    // CORREÇÃO: clickable: false permite clicar no mapa através do círculo
     circleVisual = new google.maps.Circle({
         map, center: userPos, radius: 5000,
-        fillColor: "#4f46e5", fillOpacity: 0.1, strokeOpacity: 0
+        fillColor: "#4f46e5", fillOpacity: 0.1, 
+        strokeOpacity: 0.2, strokeColor: "#4f46e5",
+        clickable: false 
     });
 
     map.addListener('click', async (e) => {
       if (!auth.currentUser) return alert("🛑 Faça login para publicar!");
+      
       const empresa = document.getElementById('emp-nome').value.trim();
       const prof = document.getElementById('emp-profissao').value.trim();
-      if (empresa && prof && confirm(`Publicar vaga em ${empresa}?`)) {
+      
+      if (!empresa || !prof) return alert("Preencha o nome da empresa e o cargo antes de clicar no mapa.");
+
+      if (confirm(`Publicar vaga para ${prof} em ${empresa} neste local?`)) {
           await addDoc(collection(db, "vagas"), {
             empresa, profissao: prof, lat: e.latLng.lat(), lng: e.latLng.lng(),
             data: Date.now(), criadoPor: auth.currentUser.uid
           });
-          alert("✅ Vaga publicada!");
+          alert("✅ Vaga publicada com sucesso!");
       }
     });
 
@@ -217,25 +224,15 @@
     });
   }
 
-  // COMPARTILHAR LINKEDIN
   window.shareLI = (vaga, empresa) => {
-      const urlSite = window.location.href;
-      const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(urlSite)}`;
+      const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
       window.open(liUrl, '_blank');
   };
 
-  // COMPARTILHAR GERAL (WhatsApp, etc)
   window.shareGeral = async (vaga, empresa) => {
-      const shareData = {
-          title: 'Alerta Vaga',
-          text: `Vaga de ${vaga} na ${empresa}. Vi no Alerta Vaga! 📍`,
-          url: window.location.href
-      };
-      if (navigator.share) {
-          try { await navigator.share(shareData); } catch {}
-      } else {
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`);
-      }
+      const shareData = { title: 'Alerta Vaga', text: `Vaga de ${vaga} na ${empresa}!`, url: window.location.href };
+      if (navigator.share) { try { await navigator.share(shareData); } catch {} }
+      else { window.open(`https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`); }
   };
 
   window.focarGPS = () => {
