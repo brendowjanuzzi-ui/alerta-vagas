@@ -104,8 +104,8 @@
     <div id="area-publicar" class="section-box" style="border-top: 4px solid var(--primary)">
       <h4 style="margin-top:0">🏢 Postar Vaga</h4>
       <input type="text" id="emp-nome" placeholder="Empresa">
-      <input type="text" id="emp-profissao" placeholder="Cargo (Ex: UX Designer)">
-      <textarea id="emp-desc" placeholder="Breve descrição..."></textarea>
+      <input type="text" id="emp-profissao" placeholder="Cargo (Ex: Junior Web Dev)">
+      <textarea id="emp-desc" placeholder="Resumo da vaga..."></textarea>
       <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">TOQUE NO MAPA PARA PUBLICAR</p>
     </div>
 
@@ -145,9 +145,9 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>Privacidade ⚖️</h3>
         <p style="font-size:0.8rem; color:var(--text-sec); text-align:left;">
-            1. <strong>Localização:</strong> Exibimos vagas baseadas no seu GPS.<br><br>
-            2. <strong>Login:</strong> Usamos seu Google ID para salvar favoritos.<br><br>
-            3. <strong>Suporte:</strong> Contato em brendowjanuzzi@gmail.com.
+            1. <strong>Localização:</strong> Usamos seu GPS apenas para exibir vagas.<br><br>
+            2. <strong>Login:</strong> Guardamos seu ID Google para favoritos e suas postagens.<br><br>
+            3. <strong>Segurança:</strong> As vagas são de responsabilidade de quem as publica.
         </p>
         <button class="btn btn-apply" onclick="fecharModais()">Aceitar</button>
     </div>
@@ -211,14 +211,34 @@
     });
     circleVisual = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.1, strokeOpacity: 0 });
     
+    // FUNÇÃO DE CLIQUE ATUALIZADA COM AVISO DE LOGIN
     map.addListener('click', async (e) => {
+      if (!auth.currentUser) {
+          alert("⚠️ Você precisa estar logado para publicar uma vaga! Entre com o Google no topo da barra lateral.");
+          document.getElementById('sidebar').scrollTop = 0;
+          return;
+      }
+
       const empresa = document.getElementById('emp-nome').value.trim();
       const prof = document.getElementById('emp-profissao').value.trim();
+      const desc = document.getElementById('emp-desc').value.trim();
+
       if (empresa && prof && confirm(`Publicar vaga em "${empresa}"?`)) {
-          await addDoc(collection(db, "vagas"), {
-            empresa, profissao: prof, lat: e.latLng.lat(), lng: e.latLng.lng(), data: Date.now(), criadoPor: auth.currentUser?.uid || "anônimo"
-          });
-          alert("Vaga publicada!");
+          try {
+              await addDoc(collection(db, "vagas"), {
+                empresa, profissao: prof, descricao: desc,
+                lat: e.latLng.lat(), lng: e.latLng.lng(),
+                data: Date.now(), criadoPor: auth.currentUser.uid 
+              });
+              alert("✅ Vaga publicada com sucesso!");
+              document.getElementById('emp-nome').value = "";
+              document.getElementById('emp-profissao').value = "";
+              document.getElementById('emp-desc').value = "";
+          } catch (err) {
+              alert("Erro ao publicar. Verifique sua conexão ou login.");
+          }
+      } else if (!empresa || !prof) {
+          alert("Preencha o nome da empresa e o cargo antes de clicar no mapa.");
       }
     });
 
@@ -273,7 +293,7 @@
         <small style="color:var(--primary); font-weight:700;">${v.empresa}</small>
         <strong style="display:block;">${v.profissao}</strong>
         <p style="font-size:0.8rem">📍 ${v.distanciaKm} km</p>
-        <button class="btn btn-apply" onclick="alert('Candidatura enviada!')">Candidatar-se</button>
+        <button class="btn btn-apply" onclick="alert('Candidatura iniciada!')">Candidatar-se</button>
         <button class="btn btn-share" onclick="abrirShare('${v.profissao}', '${v.empresa}')">📤 Compartilhar</button>
       `;
       list.appendChild(card);
@@ -282,7 +302,7 @@
   }
 
   window.abrirShare = (vaga, empresa) => {
-      const msg = encodeURIComponent(`Olha essa vaga de ${vaga} na empresa ${empresa} que encontrei no Alerta Vaga!`);
+      const msg = encodeURIComponent(`Vi essa vaga de ${vaga} na empresa ${empresa} no Alerta Vaga!`);
       const url = encodeURIComponent(window.location.href);
       document.getElementById('share-wa').onclick = () => window.open(`https://wa.me/?text=${msg}%20${url}`);
       document.getElementById('share-li').onclick = () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`);
@@ -298,7 +318,13 @@
     atualizarFiltros();
   };
 
-  window.abrirModal = (id) => document.getElementById(id).style.display = 'flex';
+  window.abrirModal = (id) => {
+      if(id === 'modal-cv' && auth.currentUser) {
+          const cargo = document.getElementById('perfil-cargo').value || "Profissional";
+          document.getElementById('cv-text').value = `Olá! Sou ${auth.currentUser.displayName}, atuo como ${cargo} e tenho interesse na vaga publicada no Alerta Vaga.`;
+      }
+      document.getElementById(id).style.display = 'flex';
+  };
   window.fecharModais = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
   window.copiarCV = () => { document.getElementById('cv-text').select(); document.execCommand('copy'); alert("Copiado!"); };
   window.focarGPS = () => {
