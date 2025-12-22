@@ -24,20 +24,20 @@
     .user-badge { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
     .user-img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); }
     
-    select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: #f1f5f9; font-weight: 600; margin-bottom: 10px; outline: none; }
+    /* Novo estilo para o seletor de perfil */
+    .profile-selector { display: flex; gap: 10px; margin-top: 10px; }
+    .sel-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.3s; }
+    .sel-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .sel-btn.active.empresa { background: var(--accent); border-color: var(--accent); }
 
-    .level-filters { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-    .level-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: white; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
-    .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-    .btn { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-google { background: white; color: #334155; border: 1px solid var(--border); }
     .btn-linkedin { background: var(--linkedin); color: white; margin-top: 10px; }
     .btn-share-all { background: #f1f5f9; color: var(--text-sec); font-size: 0.7rem; margin-top: 5px; }
     
     input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; outline: none; }
     
-    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); position: relative; }
+    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); }
     .vaga-empresa { border-left: 5px solid var(--accent); }
     .badge-empresa { background: var(--accent); color: white; font-size: 0.6rem; padding: 2px 8px; border-radius: 10px; margin-bottom: 5px; display: inline-block; }
 
@@ -58,7 +58,7 @@
     
     <div class="section-box">
         <div id="login-section">
-            <h4 style="margin:0 0 10px 0">Acesse sua conta</h4>
+            <h4 style="margin:0 0 10px 0">Acesse para interagir</h4>
             <button class="btn btn-google" onclick="window.loginGoogle()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Entrar com Google
             </button>
@@ -68,37 +68,28 @@
                 <img id="u-img" class="user-img" src="">
                 <div>
                     <strong id="u-nome"></strong><br>
-                    <button onclick="window.logout()" style="border:none; background:none; color:var(--danger); font-size:0.7rem; cursor:pointer; padding:0;">Sair</button>
+                    <button onclick="window.logout()" style="border:none; background:none; color:var(--danger); font-size:0.7rem; cursor:pointer; padding:0;">Sair da conta</button>
                 </div>
             </div>
-            <label style="font-size: 0.7rem; font-weight: 700;">TIPO DE PERFIL:</label>
-            <select id="tipo-usuario" onchange="window.salvarPerfil()">
-                <option value="candidato">Candidato (Busco Vagas)</option>
-                <option value="empresa">Empresa (Anunciar Vagas)</option>
-            </select>
-            <div id="area-candidato">
-                <input type="text" id="perfil-cargo" placeholder="Cargo que você busca" onchange="window.salvarPerfil()">
+            
+            <p style="font-size: 0.7rem; font-weight: 800; margin: 10px 0 5px 0;">O QUE VOCÊ DESEJA?</p>
+            <div class="profile-selector">
+                <button id="btn-sou-candidato" class="sel-btn" onclick="window.definirPerfil('candidato')">BUSCAR VAGAS</button>
+                <button id="btn-sou-empresa" class="sel-btn empresa" onclick="window.definirPerfil('empresa')">POSTAR VAGAS</button>
             </div>
-        </div>
-    </div>
-
-    <div class="section-box">
-        <label style="font-size: 0.75rem; font-weight:700;">Raio de distância: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
-        <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="window.atualizarFiltros()">
-        
-        <div class="level-filters">
-            <button class="level-btn active" onclick="window.filtrarNivel('Todos', this)">Todos</button>
-            <button class="level-btn" onclick="window.filtrarNivel('Junior', this)">Junior</button>
-            <button class="level-btn" onclick="window.filtrarNivel('Pleno', this)">Pleno</button>
-            <button class="level-btn" onclick="window.filtrarNivel('Sênior', this)">Sênior</button>
         </div>
     </div>
 
     <div id="postar-vaga-section" class="section-box" style="display:none; border: 2px solid var(--accent);">
         <h4 style="margin-top:0; color: var(--accent);">🏢 Painel da Empresa</h4>
-        <input type="text" id="emp-nome" placeholder="Nome da sua Empresa">
-        <input type="text" id="emp-profissao" placeholder="Título da Vaga">
-        <p style="font-size: 0.65rem; color: var(--accent); text-align:center; font-weight:700;">PARA PUBLICAR, CLIQUE NO LOCAL DO MAPA 📍</p>
+        <input type="text" id="emp-nome" placeholder="Nome da Empresa">
+        <input type="text" id="emp-profissao" placeholder="Cargo Disponível">
+        <p style="font-size: 0.65rem; color: var(--accent); text-align:center; font-weight:700;">TOQUE NO MAPA PARA PUBLICAR A VAGA</p>
+    </div>
+
+    <div class="section-box">
+        <label style="font-size: 0.75rem; font-weight:700;">Raio de busca: <span id="raio-txt">5 km</span></label>
+        <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="window.atualizarFiltros()">
     </div>
 
     <div id="jobs-list"></div>
@@ -128,38 +119,25 @@
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  let map, circleVisual, allVagas = [], markers = [], filtroNivel = 'Todos';
+  let map, circleVisual, allVagas = [], markers = [], currentTipo = 'candidato';
   let userPos = { lat: -19.919, lng: -43.938 };
 
   window.loginGoogle = () => signInWithPopup(auth, provider);
   window.logout = () => signOut(auth);
 
-  // SALVAR E GERENCIAR PERFIL
-  window.salvarPerfil = async () => {
-    if (auth.currentUser) {
-        const tipo = document.getElementById('tipo-usuario').value;
-        const cargo = document.getElementById('perfil-cargo').value;
-        await setDoc(doc(db, "usuarios", auth.currentUser.uid), { tipo, cargo }, { merge: true });
-        controlarInterface(tipo);
-    }
+  window.definirPerfil = async (tipo) => {
+      if (auth.currentUser) {
+          currentTipo = tipo;
+          await setDoc(doc(db, "usuarios", auth.currentUser.uid), { tipo }, { merge: true });
+          aplicarInterface(tipo);
+      }
   };
 
-  function controlarInterface(tipo) {
-      const areaPostar = document.getElementById('postar-vaga-section');
-      const areaCandidato = document.getElementById('area-candidato');
-      const status = document.getElementById('status-perfil');
-
-      if (tipo === 'empresa') {
-          areaPostar.style.display = 'block';
-          areaCandidato.style.display = 'none';
-          status.innerText = "Modo Empresa";
-          status.style.color = "#d8b4fe";
-      } else {
-          areaPostar.style.display = 'none';
-          areaCandidato.style.display = 'block';
-          status.innerText = "Modo Candidato";
-          status.style.color = "white";
-      }
+  function aplicarInterface(tipo) {
+      document.getElementById('btn-sou-candidato').classList.toggle('active', tipo === 'candidato');
+      document.getElementById('btn-sou-empresa').classList.toggle('active', tipo === 'empresa');
+      document.getElementById('postar-vaga-section').style.display = (tipo === 'empresa') ? 'block' : 'none';
+      document.getElementById('status-perfil').innerText = tipo === 'empresa' ? "Modo Empresa" : "Modo Candidato";
   }
 
   onAuthStateChanged(auth, async (user) => {
@@ -171,45 +149,39 @@
         
         const d = await getDoc(doc(db, "usuarios", user.uid));
         if (d.exists()) {
-            const data = d.data();
-            document.getElementById('tipo-usuario').value = data.tipo || "candidato";
-            document.getElementById('perfil-cargo').value = data.cargo || "";
-            controlarInterface(data.tipo || "candidato");
+            currentTipo = d.data().tipo || 'candidato';
+            aplicarInterface(currentTipo);
+        } else {
+            aplicarInterface('candidato'); // Default
         }
     } else {
         document.getElementById('login-section').style.display = 'block';
         document.getElementById('user-section').style.display = 'none';
         document.getElementById('postar-vaga-section').style.display = 'none';
-        document.getElementById('status-perfil').innerText = "Modo Visitante";
     }
   });
 
-  // MAPA E VAGAS
   function initMap() {
     map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
     circleVisual = new google.maps.Circle({
-        map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.1, 
-        strokeOpacity: 0.2, strokeColor: "#4f46e5", clickable: false 
+        map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.1, strokeOpacity: 0, clickable: false 
     });
 
     map.addListener('click', async (e) => {
-      const tipo = document.getElementById('tipo-usuario')?.value;
-      if (!auth.currentUser || tipo !== 'empresa') {
-          alert("🛑 Somente perfis de EMPRESA podem publicar vagas.");
+      if (currentTipo !== 'empresa') {
+          alert("Apenas empresas podem publicar. Clique no botão 'POSTAR VAGAS' no seu perfil.");
           return;
       }
-      
       const empresa = document.getElementById('emp-nome').value.trim();
       const prof = document.getElementById('emp-profissao').value.trim();
-      
-      if (!empresa || !prof) return alert("Preencha os dados da empresa e da vaga.");
+      if (!empresa || !prof) return alert("Preencha o nome da empresa e o cargo primeiro.");
 
-      if (confirm(`Publicar vaga de ${prof} em ${empresa}?`)) {
+      if (confirm(`Postar vaga em ${empresa}?`)) {
           await addDoc(collection(db, "vagas"), {
             empresa, profissao: prof, lat: e.latLng.lat(), lng: e.latLng.lng(),
-            data: Date.now(), tipoAnuncio: 'empresa', criadoPor: auth.currentUser.uid
+            data: Date.now(), tipoAnuncio: 'empresa'
           });
-          alert("✅ Vaga publicada com sucesso!");
+          alert("Vaga publicada!");
       }
     });
 
@@ -223,15 +195,13 @@
   window.atualizarFiltros = () => {
     const km = document.getElementById('rangeRaio').value;
     document.getElementById('raio-txt').innerText = km + " km";
-    if (circleVisual) circleVisual.setRadius(km * 1000);
-
+    circleVisual.setRadius(km * 1000);
     const filtradas = allVagas.filter(v => {
       const dist = google.maps.geometry.spherical.computeDistanceBetween(
         new google.maps.LatLng(userPos.lat, userPos.lng),
         new google.maps.LatLng(v.lat, v.lng)
       );
-      const matchesNivel = filtroNivel === 'Todos' || v.profissao.toLowerCase().includes(filtroNivel.toLowerCase());
-      return dist <= (km * 1000) && matchesNivel;
+      return dist <= (km * 1000);
     });
     renderVagas(filtradas);
   };
@@ -243,10 +213,9 @@
       const card = document.createElement('div');
       card.className = `vaga-card ${v.tipoAnuncio === 'empresa' ? 'vaga-empresa' : ''}`;
       card.innerHTML = `
-        ${v.tipoAnuncio === 'empresa' ? '<span class="badge-empresa">EMPRESA VERIFICADA</span><br>' : ''}
-        <strong style="color:var(--primary)">${v.empresa}</strong><br>
-        <span style="font-weight:600">${v.profissao}</span><br>
-        <button class="btn btn-linkedin" onclick="window.shareLI()">Compartilhar LinkedIn</button>
+        ${v.tipoAnuncio === 'empresa' ? '<span class="badge-empresa">EMPRESA</span>' : ''}<br>
+        <strong>${v.empresa}</strong><br><span>${v.profissao}</span><br>
+        <button class="btn btn-linkedin" onclick="window.shareLI()">LinkedIn</button>
         <button class="btn btn-share-all" onclick="window.shareGeral('${v.profissao}', '${v.empresa}')">Outros Apps</button>
       `;
       list.appendChild(card);
@@ -256,24 +225,17 @@
 
   window.shareLI = () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank');
   window.shareGeral = async (v, e) => {
-    const d = { title: 'Alerta Vaga', text: `Vaga de ${v} na ${e}!`, url: window.location.href };
-    if (navigator.share) await navigator.share(d); else window.open(`https://wa.me/?text=${encodeURIComponent(d.text + " " + d.url)}`);
+    const d = { title: 'Vaga', text: `Vaga de ${v} na ${e}!`, url: window.location.href };
+    if (navigator.share) await navigator.share(d); else window.open(`https://wa.me/?text=${encodeURIComponent(d.text)}`);
   };
 
   window.focarGPS = () => {
     navigator.geolocation.getCurrentPosition(pos => {
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       map.setCenter(userPos);
-      if (circleVisual) circleVisual.setCenter(userPos);
+      circleVisual.setCenter(userPos);
       window.atualizarFiltros();
     });
-  };
-
-  window.filtrarNivel = (n, btn) => {
-    filtroNivel = n;
-    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    window.atualizarFiltros();
   };
 
   window.initMap = initMap;
