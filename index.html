@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Alerta Vaga - Oportunidades Próximas</title>
+  <title>Alerta Vaga - Profissional</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
 
   <style>
-    :root { --primary: #4f46e5; --bg: #f8fafc; --dark: #0f172a; --card: #ffffff; --danger: #ef4444; --border: #e2e8f0; --text-sec: #64748b; --linkedin: #0077b5; }
+    :root { --primary: #4f46e5; --bg: #f8fafc; --dark: #0f172a; --card: #ffffff; --border: #e2e8f0; --text-sec: #64748b; --linkedin: #0077b5; --accent: #9333ea; }
     * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { margin: 0; background: var(--bg); overflow: hidden; color: var(--dark); }
 
@@ -21,21 +21,26 @@
 
     .section-box { background: var(--card); padding: 18px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
     
-    .user-badge { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-    .user-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); }
+    .user-badge { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+    .user-img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); }
     
+    select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: #f1f5f9; font-weight: 600; margin-bottom: 10px; outline: none; }
+
     .level-filters { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
     .level-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: white; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
     .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     .btn { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-google { background: white; color: #334155; border: 1px solid var(--border); margin-bottom: 10px;}
+    .btn-google { background: white; color: #334155; border: 1px solid var(--border); }
     .btn-linkedin { background: var(--linkedin); color: white; margin-top: 10px; }
     .btn-share-all { background: #f1f5f9; color: var(--text-sec); font-size: 0.7rem; margin-top: 5px; }
     
     input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; outline: none; }
     
-    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); position: relative; }
+    .vaga-empresa { border-left: 5px solid var(--accent); }
+    .badge-empresa { background: var(--accent); color: white; font-size: 0.6rem; padding: 2px 8px; border-radius: 10px; margin-bottom: 5px; display: inline-block; }
+
     .gps-btn { position: absolute; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; font-size: 24px; }
 
     @media (max-width: 768px) { #main-container { flex-direction: column-reverse; } #sidebar { width: 100%; height: 60vh; } #map { height: 40vh; } }
@@ -45,6 +50,7 @@
 
 <header>
     <span>📍 Alerta Vaga</span>
+    <span id="status-perfil" style="font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px;">Modo Visitante</span>
 </header>
 
 <div id="main-container">
@@ -52,7 +58,7 @@
     
     <div class="section-box">
         <div id="login-section">
-            <h4 style="margin:0">Boas-vindas!</h4>
+            <h4 style="margin:0 0 10px 0">Acesse sua conta</h4>
             <button class="btn btn-google" onclick="window.loginGoogle()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Entrar com Google
             </button>
@@ -65,12 +71,19 @@
                     <button onclick="window.logout()" style="border:none; background:none; color:var(--danger); font-size:0.7rem; cursor:pointer; padding:0;">Sair</button>
                 </div>
             </div>
-            <input type="text" id="perfil-cargo" placeholder="Seu cargo (Ex: Web Dev)" onchange="window.salvarPerfil()">
+            <label style="font-size: 0.7rem; font-weight: 700;">TIPO DE PERFIL:</label>
+            <select id="tipo-usuario" onchange="window.salvarPerfil()">
+                <option value="candidato">Candidato (Busco Vagas)</option>
+                <option value="empresa">Empresa (Anunciar Vagas)</option>
+            </select>
+            <div id="area-candidato">
+                <input type="text" id="perfil-cargo" placeholder="Cargo que você busca" onchange="window.salvarPerfil()">
+            </div>
         </div>
     </div>
 
     <div class="section-box">
-        <label style="font-size: 0.75rem; font-weight:700;">Ver vagas em um raio de: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
+        <label style="font-size: 0.75rem; font-weight:700;">Raio de distância: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
         <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="window.atualizarFiltros()">
         
         <div class="level-filters">
@@ -81,11 +94,11 @@
         </div>
     </div>
 
-    <div class="section-box">
-        <h4 style="margin-top:0">🏢 Postar Vaga</h4>
-        <input type="text" id="emp-nome" placeholder="Empresa">
-        <input type="text" id="emp-profissao" placeholder="Cargo">
-        <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">1. PREENCHA OS CAMPOS ACIMA<br>2. CLIQUE NO MAPA PARA PUBLICAR</p>
+    <div id="postar-vaga-section" class="section-box" style="display:none; border: 2px solid var(--accent);">
+        <h4 style="margin-top:0; color: var(--accent);">🏢 Painel da Empresa</h4>
+        <input type="text" id="emp-nome" placeholder="Nome da sua Empresa">
+        <input type="text" id="emp-profissao" placeholder="Título da Vaga">
+        <p style="font-size: 0.65rem; color: var(--accent); text-align:center; font-weight:700;">PARA PUBLICAR, CLIQUE NO LOCAL DO MAPA 📍</p>
     </div>
 
     <div id="jobs-list"></div>
@@ -116,16 +129,38 @@
   const provider = new GoogleAuthProvider();
 
   let map, circleVisual, allVagas = [], markers = [], filtroNivel = 'Todos';
-  let userPos = { lat: -19.919, lng: -43.938 }; // Padrão BH
+  let userPos = { lat: -19.919, lng: -43.938 };
 
   window.loginGoogle = () => signInWithPopup(auth, provider);
   window.logout = () => signOut(auth);
+
+  // SALVAR E GERENCIAR PERFIL
   window.salvarPerfil = async () => {
     if (auth.currentUser) {
+        const tipo = document.getElementById('tipo-usuario').value;
         const cargo = document.getElementById('perfil-cargo').value;
-        await setDoc(doc(db, "usuarios", auth.currentUser.uid), { cargo }, { merge: true });
+        await setDoc(doc(db, "usuarios", auth.currentUser.uid), { tipo, cargo }, { merge: true });
+        controlarInterface(tipo);
     }
   };
+
+  function controlarInterface(tipo) {
+      const areaPostar = document.getElementById('postar-vaga-section');
+      const areaCandidato = document.getElementById('area-candidato');
+      const status = document.getElementById('status-perfil');
+
+      if (tipo === 'empresa') {
+          areaPostar.style.display = 'block';
+          areaCandidato.style.display = 'none';
+          status.innerText = "Modo Empresa";
+          status.style.color = "#d8b4fe";
+      } else {
+          areaPostar.style.display = 'none';
+          areaCandidato.style.display = 'block';
+          status.innerText = "Modo Candidato";
+          status.style.color = "white";
+      }
+  }
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -133,39 +168,46 @@
         document.getElementById('user-section').style.display = 'block';
         document.getElementById('u-nome').innerText = user.displayName;
         document.getElementById('u-img').src = user.photoURL;
+        
         const d = await getDoc(doc(db, "usuarios", user.uid));
-        if (d.exists()) document.getElementById('perfil-cargo').value = d.data().cargo || "";
+        if (d.exists()) {
+            const data = d.data();
+            document.getElementById('tipo-usuario').value = data.tipo || "candidato";
+            document.getElementById('perfil-cargo').value = data.cargo || "";
+            controlarInterface(data.tipo || "candidato");
+        }
     } else {
         document.getElementById('login-section').style.display = 'block';
         document.getElementById('user-section').style.display = 'none';
+        document.getElementById('postar-vaga-section').style.display = 'none';
+        document.getElementById('status-perfil').innerText = "Modo Visitante";
     }
   });
 
+  // MAPA E VAGAS
   function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), { 
-        center: userPos, zoom: 14, disableDefaultUI: true 
-    });
-
-    // CORREÇÃO: clickable: false permite clicar no mapa através do círculo
+    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
     circleVisual = new google.maps.Circle({
-        map, center: userPos, radius: 5000,
-        fillColor: "#4f46e5", fillOpacity: 0.1, 
-        strokeOpacity: 0.2, strokeColor: "#4f46e5",
-        clickable: false 
+        map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.1, 
+        strokeOpacity: 0.2, strokeColor: "#4f46e5", clickable: false 
     });
 
     map.addListener('click', async (e) => {
-      if (!auth.currentUser) return alert("🛑 Faça login para publicar!");
+      const tipo = document.getElementById('tipo-usuario')?.value;
+      if (!auth.currentUser || tipo !== 'empresa') {
+          alert("🛑 Somente perfis de EMPRESA podem publicar vagas.");
+          return;
+      }
       
       const empresa = document.getElementById('emp-nome').value.trim();
       const prof = document.getElementById('emp-profissao').value.trim();
       
-      if (!empresa || !prof) return alert("Preencha o nome da empresa e o cargo antes de clicar no mapa.");
+      if (!empresa || !prof) return alert("Preencha os dados da empresa e da vaga.");
 
-      if (confirm(`Publicar vaga para ${prof} em ${empresa} neste local?`)) {
+      if (confirm(`Publicar vaga de ${prof} em ${empresa}?`)) {
           await addDoc(collection(db, "vagas"), {
             empresa, profissao: prof, lat: e.latLng.lat(), lng: e.latLng.lng(),
-            data: Date.now(), criadoPor: auth.currentUser.uid
+            data: Date.now(), tipoAnuncio: 'empresa', criadoPor: auth.currentUser.uid
           });
           alert("✅ Vaga publicada com sucesso!");
       }
@@ -177,13 +219,6 @@
     });
     window.focarGPS();
   }
-
-  window.filtrarNivel = (n, btn) => {
-    filtroNivel = n;
-    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    window.atualizarFiltros();
-  };
 
   window.atualizarFiltros = () => {
     const km = document.getElementById('rangeRaio').value;
@@ -206,33 +241,23 @@
     list.innerHTML = ""; markers.forEach(m => m.setMap(null));
     vagas.forEach(v => {
       const card = document.createElement('div');
-      card.className = 'vaga-card';
+      card.className = `vaga-card ${v.tipoAnuncio === 'empresa' ? 'vaga-empresa' : ''}`;
       card.innerHTML = `
-        <strong style="color:var(--primary); font-size:1.1rem">${v.empresa}</strong><br>
+        ${v.tipoAnuncio === 'empresa' ? '<span class="badge-empresa">EMPRESA VERIFICADA</span><br>' : ''}
+        <strong style="color:var(--primary)">${v.empresa}</strong><br>
         <span style="font-weight:600">${v.profissao}</span><br>
-        
-        <button class="btn btn-linkedin" onclick="window.shareLI('${v.profissao}', '${v.empresa}')">
-            <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="14" style="filter:brightness(10)"> Compartilhar no LinkedIn
-        </button>
-        
-        <button class="btn btn-share-all" onclick="window.shareGeral('${v.profissao}', '${v.empresa}')">
-            📤 Enviar para WhatsApp e outros
-        </button>
+        <button class="btn btn-linkedin" onclick="window.shareLI()">Compartilhar LinkedIn</button>
+        <button class="btn btn-share-all" onclick="window.shareGeral('${v.profissao}', '${v.empresa}')">Outros Apps</button>
       `;
       list.appendChild(card);
       markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
   }
 
-  window.shareLI = (vaga, empresa) => {
-      const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
-      window.open(liUrl, '_blank');
-  };
-
-  window.shareGeral = async (vaga, empresa) => {
-      const shareData = { title: 'Alerta Vaga', text: `Vaga de ${vaga} na ${empresa}!`, url: window.location.href };
-      if (navigator.share) { try { await navigator.share(shareData); } catch {} }
-      else { window.open(`https://wa.me/?text=${encodeURIComponent(shareData.text + " " + shareData.url)}`); }
+  window.shareLI = () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank');
+  window.shareGeral = async (v, e) => {
+    const d = { title: 'Alerta Vaga', text: `Vaga de ${v} na ${e}!`, url: window.location.href };
+    if (navigator.share) await navigator.share(d); else window.open(`https://wa.me/?text=${encodeURIComponent(d.text + " " + d.url)}`);
   };
 
   window.focarGPS = () => {
@@ -242,6 +267,13 @@
       if (circleVisual) circleVisual.setCenter(userPos);
       window.atualizarFiltros();
     });
+  };
+
+  window.filtrarNivel = (n, btn) => {
+    filtroNivel = n;
+    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window.atualizarFiltros();
   };
 
   window.initMap = initMap;
