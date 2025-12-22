@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Alerta Vaga - Encontre Oportunidades Próximas</title>
+  <title>Alerta Vaga - Oportunidades Próximas</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
@@ -13,43 +13,40 @@
     * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { margin: 0; background: var(--bg); overflow: hidden; color: var(--dark); }
 
-    header { background: var(--dark); color: white; padding: 16px 24px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    header { background: var(--dark); color: white; padding: 16px 24px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; }
     
     #main-container { display: flex; height: calc(100vh - 65px); }
     #sidebar { width: 420px; background: var(--bg); padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); }
     #map { flex: 1; height: 100%; position: relative; }
 
     .section-box { background: var(--card); padding: 18px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
-    .corporate { border-top: 4px solid var(--primary); }
+    
+    .user-badge { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+    .user-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); }
     
     .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #e2e8f0; padding: 5px; border-radius: 12px; }
-    .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s; }
+    .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
     .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-    .level-filters { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .level-filters { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
     .level-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: white; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
     .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 0.95rem; outline: none; background: #ffffff; transition: 0.2s; }
+    input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 0.95rem; outline: none; }
     
-    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); position: relative; transition: transform 0.2s; }
-    .vaga-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-    
-    .fav-icon { position: absolute; top: 18px; right: 18px; cursor: pointer; font-size: 1.3rem; filter: grayscale(1); transition: 0.2s; }
-    .fav-icon.active { filter: grayscale(0); }
-    
-    .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
-    .btn-apply { background: var(--primary); color: white; margin-top: 10px; }
+    .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-google { background: white; color: #334155; border: 1px solid var(--border); }
+    .btn-apply { background: var(--primary); color: white; }
     .btn-cv { background: #10b981; color: white; margin-top: 5px; font-size: 0.75rem; }
 
-    .skeleton { height: 120px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 18px; margin-bottom: 14px; }
-    @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); position: relative; }
+    .fav-icon { position: absolute; top: 18px; right: 18px; cursor: pointer; font-size: 1.3rem; filter: grayscale(1); }
+    .fav-icon.active { filter: grayscale(0); }
 
     .gps-btn { position: absolute; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; font-size: 24px; }
 
-    /* Modal de Currículo */
-    #cv-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
-    .modal-content { background:white; p:30px; border-radius:20px; width:90%; max-width:500px; padding: 25px; }
+    .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; }
+    .modal-content { background:white; padding:25px; border-radius:20px; width:90%; max-width:450px; max-height: 80vh; overflow-y: auto; }
 
     @media (max-width: 768px) { #main-container { flex-direction: column-reverse; } #sidebar { width: 100%; height: 60vh; } #map { height: 40vh; } }
   </style>
@@ -58,17 +55,30 @@
 
 <header>
     <span>📍 Alerta Vaga</span>
-    <small style="font-weight: 400; font-size: 0.7rem; opacity: 0.8;">Oportunidades Gealocalizadas</small>
+    <div id="auth-header"></div>
 </header>
 
 <div id="main-container">
   <div id="sidebar">
     
-    <div class="section-box">
-      <h4 style="margin-top:0">👤 Seu Perfil Profissional</h4>
-      <input type="text" id="perfil-nome" placeholder="Seu nome" onchange="salvarPerfil()">
-      <input type="text" id="perfil-cargo" placeholder="Seu cargo atual/pretendido" onchange="salvarPerfil()">
-      <button class="btn btn-cv" onclick="gerarCurriculo()">📄 Gerar Texto de Candidatura</button>
+    <div id="profile-area" class="section-box">
+        <div id="login-section">
+            <h4 style="margin:0 0 10px 0">Boas-vindas!</h4>
+            <button class="btn btn-google" onclick="loginGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Entrar com Google
+            </button>
+        </div>
+        <div id="user-section" style="display:none">
+            <div class="user-badge">
+                <img id="u-img" class="user-img">
+                <div>
+                    <strong id="u-nome"></strong><br>
+                    <button onclick="logout()" style="border:none; background:none; color:var(--danger); font-size:0.7rem; padding:0; cursor:pointer;">Sair</button>
+                </div>
+            </div>
+            <input type="text" id="perfil-cargo" placeholder="Seu cargo (ex: Dev React)" onchange="salvarPerfil()">
+            <button class="btn btn-cv" onclick="abrirModal('modal-cv')">📄 Gerar Texto de Candidatura</button>
+        </div>
     </div>
 
     <div class="tabs">
@@ -81,7 +91,6 @@
         <div class="section-box">
           <input type="text" id="cand-busca" placeholder="🔎 Cargo ou empresa..." onkeyup="atualizarFiltros()">
           
-          <label style="font-size: 0.75rem; font-weight:700;">Nível:</label>
           <div class="level-filters">
               <button class="level-btn active" onclick="filtrarNivel('Todos', this)">Todos</button>
               <button class="level-btn" onclick="filtrarNivel('Junior', this)">Junior</button>
@@ -89,22 +98,25 @@
               <button class="level-btn" onclick="filtrarNivel('Sênior', this)">Sênior</button>
           </div>
 
-          <div style="margin-top: 15px;">
-            <label style="font-size: 0.75rem; font-weight:700;">Raio: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
-            <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="atualizarFiltros()">
-          </div>
+          <label style="font-size: 0.75rem; font-weight:700;">Raio: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
+          <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="atualizarFiltros()">
         </div>
     </div>
 
-    <div id="area-publicar" class="section-box corporate">
+    <div id="area-publicar" class="section-box" style="border-top: 4px solid var(--primary)">
       <h4 style="margin-top:0">🏢 Postar Vaga</h4>
-      <input type="text" id="emp-nome" placeholder="Empresa" onchange="salvarPerfil()">
-      <input type="text" id="emp-profissao" placeholder="Vaga (ex: Designer Pleno)">
-      <textarea id="emp-desc" placeholder="Descrição rápida..."></textarea>
-      <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">CLIQUE NO MAPA PARA FIXAR A VAGA</p>
+      <input type="text" id="emp-nome" placeholder="Nome da Empresa">
+      <input type="text" id="emp-profissao" placeholder="Cargo (Ex: UX Designer)">
+      <textarea id="emp-desc" placeholder="Breve descrição..."></textarea>
+      <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">TOQUE NO MAPA PARA PUBLICAR</p>
     </div>
 
     <div id="jobs-list"></div>
+
+    <div style="margin-top: 30px; text-align: center; padding-bottom: 20px;">
+        <a href="mailto:brendowjanuzzi@gmail.com?subject=Suporte Alerta Vaga" style="font-size: 0.75rem; color: var(--primary); text-decoration: none; font-weight: 700;">📧 Suporte: brendowjanuzzi@gmail.com</a><br><br>
+        <a href="#" onclick="abrirModal('modal-termos')" style="font-size: 0.65rem; color: var(--text-sec);">Termos de Uso e Privacidade</a>
+    </div>
   </div>
 
   <div id="map">
@@ -112,17 +124,28 @@
   </div>
 </div>
 
-<div id="cv-modal" onclick="this.style.display='none'">
+<div id="modal-cv" class="modal-overlay" onclick="fecharModais()">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h4>Sua Apresentação 📄</h4>
-        <textarea id="cv-text" style="height:200px; font-size:0.8rem;"></textarea>
+        <h4>Apresentação Profissional 📄</h4>
+        <textarea id="cv-text" style="height:150px; font-size:0.85rem;"></textarea>
         <button class="btn btn-apply" onclick="copiarCV()">Copiar Texto</button>
+    </div>
+</div>
+
+<div id="modal-termos" class="modal-overlay" onclick="fecharModais()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3>Privacidade e Termos ⚖️</h3>
+        <p>1. <strong>GPS:</strong> Usamos sua localização apenas para mostrar vagas próximas em tempo real.</p>
+        <p>2. <strong>Dados:</strong> Nome e cargo vinculados ao seu Google Login são usados para facilitar candidaturas.</p>
+        <p>3. <strong>Vagas:</strong> O Alerta Vaga é um facilitador. A veracidade da vaga é responsabilidade do anunciante.</p>
+        <button class="btn btn-apply" onclick="fecharModais()">Aceitar e Continuar</button>
     </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
@@ -135,68 +158,69 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
   let map, allVagas = [], markers = [], circleVisual, currentTab = 'vagas', filtroNivel = 'Todos';
   let userPos = { lat: -23.5505, lng: -46.6333 };
-  let candidaturas = [];
-  let meusFavoritos = JSON.parse(localStorage.getItem('favs_ids') || '[]');
+  let userData = { favoritos: [], cargo: "" };
 
-  function tempoAtras(time) {
-      if(!time) return "Recente";
-      const segundos = Math.floor((Date.now() - time) / 1000);
-      if (segundos < 60) return 'Agora';
-      if (segundos < 3600) return `Há ${Math.floor(segundos/60)}m`;
-      if (segundos < 86400) return `Há ${Math.floor(segundos/3600)}h`;
-      return `Há ${Math.floor(segundos/86400)}d`;
-  }
+  window.loginGoogle = () => signInWithPopup(auth, provider);
+  window.logout = () => signOut(auth);
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('user-section').style.display = 'block';
+        document.getElementById('u-nome').innerText = user.displayName;
+        document.getElementById('u-img').src = user.photoURL;
+        
+        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+        if (userDoc.exists()) {
+            userData = userDoc.data();
+            document.getElementById('perfil-cargo').value = userData.cargo || "";
+        }
+    } else {
+        document.getElementById('login-section').style.display = 'block';
+        document.getElementById('user-section').style.display = 'none';
+    }
+    atualizarFiltros();
+  });
+
+  window.salvarPerfil = async () => {
+    if (auth.currentUser) {
+        userData.cargo = document.getElementById('perfil-cargo').value;
+        await setDoc(doc(db, "usuarios", auth.currentUser.uid), userData);
+    }
+  };
 
   function initMap() {
     map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
-    circleVisual = new google.maps.Circle({ 
-        map, center: userPos, radius: 5000, 
-        fillColor: "#4f46e5", fillOpacity: 0.1, strokeColor: "#4f46e5", strokeOpacity: 0.2, strokeWeight: 1 
-    });
-
+    circleVisual = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.1, strokeOpacity: 0 });
+    
     map.addListener('click', async (e) => {
       const empresa = document.getElementById('emp-nome').value.trim();
       const prof = document.getElementById('emp-profissao').value.trim();
-      if (empresa && prof && confirm(`Postar vaga em "${empresa}" aqui?`)) {
+      if (empresa && prof && confirm(`Publicar vaga em "${empresa}"?`)) {
           await addDoc(collection(db, "vagas"), {
-            empresa, profissao: prof, descricao: document.getElementById('emp-desc').value,
-            lat: e.latLng.lat(), lng: e.latLng.lng(), criadoPor: empresa, data: Date.now()
+            empresa, profissao: prof, lat: e.latLng.lat(), lng: e.latLng.lng(), data: Date.now(), criadoPor: auth.currentUser?.uid || "anônimo"
           });
-          alert("Vaga postada!");
+          alert("Vaga publicada!");
       }
     });
 
-    carregarPerfil();
-    focarGPS();
-    escutarDados();
-  }
-
-  function escutarDados() {
     onSnapshot(collection(db, "vagas"), (snap) => {
       allVagas = []; snap.forEach(d => allVagas.push({ id: d.id, ...d.data() }));
       atualizarFiltros();
     });
-    onSnapshot(collection(db, "candidaturas"), (snap) => {
-      candidaturas = []; snap.forEach(d => candidaturas.push({ id: d.id, ...d.data() }));
-      atualizarFiltros();
-    });
+    focarGPS();
   }
 
-  window.gerarCurriculo = () => {
-      const nome = document.getElementById('perfil-nome').value || "[Seu Nome]";
-      const cargo = document.getElementById('perfil-cargo').value || "[Seu Cargo]";
-      const texto = `Olá, meu nome é ${nome} e atuo como ${cargo}.\n\nVi a vaga publicada no Alerta Vagas e gostaria de me candidatar. Tenho interesse em conhecer mais sobre a empresa e as oportunidades disponíveis.\n\nAguardo seu retorno!`;
-      document.getElementById('cv-text').value = texto;
-      document.getElementById('cv-modal').style.display = 'flex';
-  };
-
-  window.copiarCV = () => {
-      document.getElementById('cv-text').select();
-      document.execCommand('copy');
-      alert("Copiado para a área de transferência!");
+  window.setTab = (t) => {
+      currentTab = t;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-' + t).classList.add('active');
+      atualizarFiltros();
   };
 
   window.filtrarNivel = (nivel, btn) => {
@@ -206,27 +230,17 @@
       atualizarFiltros();
   };
 
-  window.setTab = (t) => {
-      currentTab = t;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-' + t).classList.add('active');
-      document.getElementById('area-filtros').style.display = t === 'vagas' ? 'block' : 'none';
-      document.getElementById('area-publicar').style.display = t === 'vagas' ? 'block' : 'none';
-      atualizarFiltros();
-  };
-
   window.atualizarFiltros = () => {
     const km = document.getElementById('rangeRaio').value;
     const busca = document.getElementById('cand-busca').value.toLowerCase();
-    const minhaEmpresa = document.getElementById('emp-nome').value;
     document.getElementById('raio-txt').innerText = km + " km";
-    circleVisual.setRadius(km * 1000);
+    if(circleVisual) circleVisual.setRadius(km * 1000);
 
     let filtradas = allVagas.filter(v => {
       const dist = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng));
       v.distanciaKm = (dist / 1000).toFixed(1);
-      if (currentTab === 'minhas') return v.criadoPor === minhaEmpresa;
-      if (currentTab === 'favs') return meusFavoritos.includes(v.id);
+      if (currentTab === 'favs') return userData.favoritos?.includes(v.id);
+      if (currentTab === 'minhas') return v.criadoPor === auth.currentUser?.uid;
       const matchesBusca = v.profissao.toLowerCase().includes(busca) || v.empresa.toLowerCase().includes(busca);
       const matchesNivel = filtroNivel === 'Todos' || v.profissao.toLowerCase().includes(filtroNivel.toLowerCase());
       return dist <= (km * 1000) && matchesBusca && matchesNivel;
@@ -236,71 +250,45 @@
 
   function renderVagas(vagas) {
     const list = document.getElementById('jobs-list');
-    list.innerHTML = ""; markers.forEach(m => m.setMap(null)); markers = [];
-
+    list.innerHTML = ""; markers.forEach(m => m.setMap(null));
     vagas.forEach(v => {
-      const isFav = meusFavoritos.includes(v.id);
-      const candDaVaga = candidaturas.filter(c => c.vagaId === v.id);
+      const isFav = userData.favoritos?.includes(v.id);
       const card = document.createElement('div');
       card.className = 'vaga-card';
-      
-      let html = `
+      card.innerHTML = `
         <span class="fav-icon ${isFav ? 'active' : ''}" onclick="toggleFav('${v.id}')">❤️</span>
-        <div style="font-size:0.65rem; color:var(--text-sec);">${tempoAtras(v.data)}</div>
-        <div style="font-size:0.75rem; color:var(--primary); font-weight:700;">${v.empresa}</div>
-        <strong style="font-size:1.1rem;">${v.profissao}</strong>
-        <p style="font-size:0.85rem; margin:5px 0;">📍 ${v.distanciaKm} km de distância</p>
+        <small style="color:var(--primary); font-weight:700;">${v.empresa}</small>
+        <strong>${v.profissao}</strong>
+        <p style="font-size:0.8rem">📍 ${v.distanciaKm} km</p>
+        <button class="btn btn-apply" style="margin-top:10px" onclick="candidatar()">Candidatar-se</button>
       `;
-
-      if (currentTab === 'minhas') {
-          html += `<div style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;">
-            <b style="font-size:0.75rem;">Candidatos (${candDaVaga.length}):</b>
-            ${candDaVaga.map(c => `<div style="background:#f1f5f9; padding:5px; border-radius:5px; margin-top:5px; font-size:0.75rem;">👤 ${c.nomeCandidato}</div>`).join('')}
-            <button class="btn" style="background:#fee2e2; color:#ef4444; margin-top:10px; font-size:0.7rem;" onclick="eliminarVaga('${v.id}')">Excluir Vaga</button>
-          </div>`;
-      } else {
-          html += `<button class="btn btn-apply" onclick="candidatar('${v.id}', '${v.empresa}')">Candidatar-se</button>`;
-      }
-
-      card.innerHTML = html;
       list.appendChild(card);
-      markers.push(new google.maps.Marker({ position: {lat: Number(v.lat), lng: Number(v.lng)}, map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4f46e5", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } }));
+      markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4f46e5", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } }));
     });
   }
 
-  window.toggleFav = (id) => {
-      if(meusFavoritos.includes(id)) meusFavoritos = meusFavoritos.filter(favId => favId !== id);
-      else meusFavoritos.push(id);
-      localStorage.setItem('favs_ids', JSON.stringify(meusFavoritos));
-      atualizarFiltros();
+  window.toggleFav = async (id) => {
+    if (!auth.currentUser) return alert("Faça login para salvar!");
+    if (!userData.favoritos) userData.favoritos = [];
+    if (userData.favoritos.includes(id)) userData.favoritos = userData.favoritos.filter(f => f !== id);
+    else userData.favoritos.push(id);
+    await setDoc(doc(db, "usuarios", auth.currentUser.uid), userData);
+    atualizarFiltros();
   };
 
-  window.candidatar = async (vagaId, empresaNome) => {
-      const nome = document.getElementById('perfil-nome').value;
-      const cargo = document.getElementById('perfil-cargo').value;
-      if(!nome || !cargo) return alert("Preencha seu nome e cargo no perfil!");
-      await addDoc(collection(db, "candidaturas"), { vagaId, nomeCandidato: nome, cargoPretendido: cargo, paraEmpresa: empresaNome });
-      alert("Candidatura enviada!");
+  window.abrirModal = (id) => {
+      if(id === 'modal-cv' && auth.currentUser) {
+          const cargo = document.getElementById('perfil-cargo').value || "Profissional";
+          document.getElementById('cv-text').value = `Olá! Sou ${auth.currentUser.displayName}, atuo como ${cargo} e tenho interesse na sua vaga publicada no Alerta Vaga.`;
+      }
+      document.getElementById(id).style.display = 'flex';
   };
-
-  window.eliminarVaga = async (id) => {
-      if(confirm("Excluir vaga?")) { await deleteDoc(doc(db, "vagas", id)); alert("Excluída."); }
-  };
-
-  window.salvarPerfil = () => {
-      localStorage.setItem('perfil_nome', document.getElementById('perfil-nome').value);
-      localStorage.setItem('perfil_cargo', document.getElementById('perfil-cargo').value);
-      localStorage.setItem('emp_nome', document.getElementById('emp-nome').value);
-  };
-  function carregarPerfil() {
-      document.getElementById('perfil-nome').value = localStorage.getItem('perfil_nome') || '';
-      document.getElementById('perfil-cargo').value = localStorage.getItem('perfil_cargo') || '';
-      document.getElementById('emp-nome').value = localStorage.getItem('emp_nome') || '';
-  }
+  window.fecharModais = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+  window.copiarCV = () => { document.getElementById('cv-text').select(); document.execCommand('copy'); alert("Copiado!"); };
   window.focarGPS = () => {
     navigator.geolocation.getCurrentPosition(pos => {
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      map.setCenter(userPos); circleVisual.setCenter(userPos);
+      map.setCenter(userPos); if(circleVisual) circleVisual.setCenter(userPos);
       atualizarFiltros();
     });
   };
