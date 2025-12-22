@@ -26,13 +26,11 @@
     .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s; }
     .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-    /* Estilo dos Botões de Nível */
     .level-filters { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .level-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: white; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
     .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 0.95rem; outline: none; background: #ffffff; transition: 0.2s; }
-    input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
     
     .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); position: relative; transition: transform 0.2s; }
     .vaga-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
@@ -40,17 +38,18 @@
     .fav-icon { position: absolute; top: 18px; right: 18px; cursor: pointer; font-size: 1.3rem; filter: grayscale(1); transition: 0.2s; }
     .fav-icon.active { filter: grayscale(0); }
     
-    .time-badge { font-size: 0.65rem; color: var(--text-sec); font-weight: 500; display: block; margin-bottom: 4px; }
     .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
     .btn-apply { background: var(--primary); color: white; margin-top: 10px; }
-    .btn-apply:hover { opacity: 0.9; }
+    .btn-cv { background: #10b981; color: white; margin-top: 5px; font-size: 0.75rem; }
 
-    /* Skeleton Loading */
     .skeleton { height: 120px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 18px; margin-bottom: 14px; }
     @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    .gps-btn { position: absolute; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; font-size: 24px; transition: 0.3s; }
-    .gps-btn:hover { transform: scale(1.1); }
+    .gps-btn { position: absolute; bottom: 30px; right: 30px; background: var(--primary); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; font-size: 24px; }
+
+    /* Modal de Currículo */
+    #cv-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+    .modal-content { background:white; p:30px; border-radius:20px; width:90%; max-width:500px; padding: 25px; }
 
     @media (max-width: 768px) { #main-container { flex-direction: column-reverse; } #sidebar { width: 100%; height: 60vh; } #map { height: 40vh; } }
   </style>
@@ -59,29 +58,30 @@
 
 <header>
     <span>📍 Alerta Vaga</span>
-    <small style="font-weight: 400; font-size: 0.7rem; opacity: 0.8;">Oportunidades em tempo real</small>
+    <small style="font-weight: 400; font-size: 0.7rem; opacity: 0.8;">Oportunidades Gealocalizadas</small>
 </header>
 
 <div id="main-container">
   <div id="sidebar">
     
     <div class="section-box">
-      <h4 style="margin-top:0">👤 Seu Perfil</h4>
-      <input type="text" id="perfil-nome" placeholder="Seu nome completo" onchange="salvarPerfil()">
-      <input type="text" id="perfil-cargo" placeholder="Ex: Desenvolvedor Front-end" onchange="salvarPerfil()">
+      <h4 style="margin-top:0">👤 Seu Perfil Profissional</h4>
+      <input type="text" id="perfil-nome" placeholder="Seu nome" onchange="salvarPerfil()">
+      <input type="text" id="perfil-cargo" placeholder="Seu cargo atual/pretendido" onchange="salvarPerfil()">
+      <button class="btn btn-cv" onclick="gerarCurriculo()">📄 Gerar Texto de Candidatura</button>
     </div>
 
     <div class="tabs">
         <button class="tab-btn active" id="btn-vagas" onclick="setTab('vagas')">Explorar</button>
-        <button class="tab-btn" id="btn-favs" onclick="setTab('favs')">Favoritos ❤️</button>
+        <button class="tab-btn" id="btn-favs" onclick="setTab('favs')">Salvas ❤️</button>
         <button class="tab-btn" id="btn-minhas" onclick="setTab('minhas')">Minhas Vagas</button>
     </div>
 
     <div id="area-filtros">
         <div class="section-box">
-          <input type="text" id="cand-busca" placeholder="🔎 Buscar cargo ou empresa..." onkeyup="atualizarFiltros()">
+          <input type="text" id="cand-busca" placeholder="🔎 Cargo ou empresa..." onkeyup="atualizarFiltros()">
           
-          <label style="font-size: 0.75rem; font-weight:700;">Experiência:</label>
+          <label style="font-size: 0.75rem; font-weight:700;">Nível:</label>
           <div class="level-filters">
               <button class="level-btn active" onclick="filtrarNivel('Todos', this)">Todos</button>
               <button class="level-btn" onclick="filtrarNivel('Junior', this)">Junior</button>
@@ -90,24 +90,21 @@
           </div>
 
           <div style="margin-top: 15px;">
-            <label style="font-size: 0.75rem; font-weight:700;">Raio de busca: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
-            <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="atualizarFiltros()" style="margin-top:8px">
+            <label style="font-size: 0.75rem; font-weight:700;">Raio: <span id="raio-txt" style="color:var(--primary)">5 km</span></label>
+            <input type="range" id="rangeRaio" min="1" max="100" value="5" oninput="atualizarFiltros()">
           </div>
         </div>
     </div>
 
     <div id="area-publicar" class="section-box corporate">
-      <h4 style="margin-top:0">🏢 Área da Empresa</h4>
-      <input type="text" id="emp-nome" placeholder="Nome da Empresa" onchange="salvarPerfil()">
-      <input type="text" id="emp-profissao" placeholder="Título da Vaga (Ex: Pleno React)">
-      <textarea id="emp-desc" placeholder="Descreva os requisitos básicos..."></textarea>
-      <p style="font-size: 0.7rem; color: var(--primary); text-align:center; font-weight:600; background: #eef2ff; padding: 10px; border-radius: 8px;">🎯 Clique no local exato do mapa para publicar</p>
+      <h4 style="margin-top:0">🏢 Postar Vaga</h4>
+      <input type="text" id="emp-nome" placeholder="Empresa" onchange="salvarPerfil()">
+      <input type="text" id="emp-profissao" placeholder="Vaga (ex: Designer Pleno)">
+      <textarea id="emp-desc" placeholder="Descrição rápida..."></textarea>
+      <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:700;">CLIQUE NO MAPA PARA FIXAR A VAGA</p>
     </div>
 
-    <div id="jobs-list">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-    </div>
+    <div id="jobs-list"></div>
   </div>
 
   <div id="map">
@@ -115,9 +112,17 @@
   </div>
 </div>
 
+<div id="cv-modal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h4>Sua Apresentação 📄</h4>
+        <textarea id="cv-text" style="height:200px; font-size:0.8rem;"></textarea>
+        <button class="btn btn-apply" onclick="copiarCV()">Copiar Texto</button>
+    </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
@@ -136,41 +141,31 @@
   let candidaturas = [];
   let meusFavoritos = JSON.parse(localStorage.getItem('favs_ids') || '[]');
 
-  // Função auxiliar para tempo relativo
   function tempoAtras(time) {
-      if(!time) return "";
+      if(!time) return "Recente";
       const segundos = Math.floor((Date.now() - time) / 1000);
-      if (segundos < 60) return 'Agora mesmo';
-      const minutos = Math.floor(segundos / 60);
-      if (minutos < 60) return `Há ${minutos}m`;
-      const horas = Math.floor(minutos / 60);
-      if (horas < 24) return `Há ${horas}h`;
-      return `Há ${Math.floor(horas / 24)}d`;
+      if (segundos < 60) return 'Agora';
+      if (segundos < 3600) return `Há ${Math.floor(segundos/60)}m`;
+      if (segundos < 86400) return `Há ${Math.floor(segundos/3600)}h`;
+      return `Há ${Math.floor(segundos/86400)}d`;
   }
 
   function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), { 
-        center: userPos, 
-        zoom: 14, 
-        disableDefaultUI: true,
-        styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }] 
-    });
-    
+    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
     circleVisual = new google.maps.Circle({ 
         map, center: userPos, radius: 5000, 
-        fillColor: "#4f46e5", fillOpacity: 0.1, 
-        strokeColor: "#4f46e5", strokeOpacity: 0.3, strokeWeight: 1, clickable: false 
+        fillColor: "#4f46e5", fillOpacity: 0.1, strokeColor: "#4f46e5", strokeOpacity: 0.2, strokeWeight: 1 
     });
 
     map.addListener('click', async (e) => {
       const empresa = document.getElementById('emp-nome').value.trim();
       const prof = document.getElementById('emp-profissao').value.trim();
-      if (empresa && prof && confirm(`Publicar vaga em "${empresa}" neste local?`)) {
+      if (empresa && prof && confirm(`Postar vaga em "${empresa}" aqui?`)) {
           await addDoc(collection(db, "vagas"), {
             empresa, profissao: prof, descricao: document.getElementById('emp-desc').value,
             lat: e.latLng.lat(), lng: e.latLng.lng(), criadoPor: empresa, data: Date.now()
           });
-          alert("Vaga publicada com sucesso!");
+          alert("Vaga postada!");
       }
     });
 
@@ -189,6 +184,20 @@
       atualizarFiltros();
     });
   }
+
+  window.gerarCurriculo = () => {
+      const nome = document.getElementById('perfil-nome').value || "[Seu Nome]";
+      const cargo = document.getElementById('perfil-cargo').value || "[Seu Cargo]";
+      const texto = `Olá, meu nome é ${nome} e atuo como ${cargo}.\n\nVi a vaga publicada no Alerta Vagas e gostaria de me candidatar. Tenho interesse em conhecer mais sobre a empresa e as oportunidades disponíveis.\n\nAguardo seu retorno!`;
+      document.getElementById('cv-text').value = texto;
+      document.getElementById('cv-modal').style.display = 'flex';
+  };
+
+  window.copiarCV = () => {
+      document.getElementById('cv-text').select();
+      document.execCommand('copy');
+      alert("Copiado para a área de transferência!");
+  };
 
   window.filtrarNivel = (nivel, btn) => {
       filtroNivel = nivel;
@@ -214,18 +223,12 @@
     circleVisual.setRadius(km * 1000);
 
     let filtradas = allVagas.filter(v => {
-      const dist = google.maps.geometry.spherical.computeDistanceBetween(
-          new google.maps.LatLng(userPos.lat, userPos.lng), 
-          new google.maps.LatLng(v.lat, v.lng)
-      );
+      const dist = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng));
       v.distanciaKm = (dist / 1000).toFixed(1);
-
       if (currentTab === 'minhas') return v.criadoPor === minhaEmpresa;
       if (currentTab === 'favs') return meusFavoritos.includes(v.id);
-
       const matchesBusca = v.profissao.toLowerCase().includes(busca) || v.empresa.toLowerCase().includes(busca);
       const matchesNivel = filtroNivel === 'Todos' || v.profissao.toLowerCase().includes(filtroNivel.toLowerCase());
-      
       return dist <= (km * 1000) && matchesBusca && matchesNivel;
     });
     renderVagas(filtradas);
@@ -235,13 +238,6 @@
     const list = document.getElementById('jobs-list');
     list.innerHTML = ""; markers.forEach(m => m.setMap(null)); markers = [];
 
-    if(vagas.length === 0) {
-        list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-sec);">
-            <p>Nenhuma vaga encontrada nesta área 🔍</p>
-        </div>`;
-        return;
-    }
-
     vagas.forEach(v => {
       const isFav = meusFavoritos.includes(v.id);
       const candDaVaga = candidaturas.filter(c => c.vagaId === v.id);
@@ -250,41 +246,28 @@
       
       let html = `
         <span class="fav-icon ${isFav ? 'active' : ''}" onclick="toggleFav('${v.id}')">❤️</span>
-        <span class="time-badge">${tempoAtras(v.data)}</span>
-        <div style="font-size:0.75rem; color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing: 0.5px;">${v.empresa}</div>
-        <strong style="font-size: 1.1rem; display:block; margin: 4px 0;">${v.profissao}</strong>
-        <p style="font-size:0.85rem; margin:8px 0; color: var(--text-sec);">📍 A ${v.distanciaKm} km de você</p>
+        <div style="font-size:0.65rem; color:var(--text-sec);">${tempoAtras(v.data)}</div>
+        <div style="font-size:0.75rem; color:var(--primary); font-weight:700;">${v.empresa}</div>
+        <strong style="font-size:1.1rem;">${v.profissao}</strong>
+        <p style="font-size:0.85rem; margin:5px 0;">📍 ${v.distanciaKm} km de distância</p>
       `;
 
       if (currentTab === 'minhas') {
-          html += `<div style="margin-top:15px; border-top: 1px solid #f1f5f9; padding-top:12px;">
-            <b style="font-size:0.75rem; color: var(--dark);">Candidatos (${candDaVaga.length}):</b>
-            ${candDaVaga.map(c => `<div class="candidato-info" style="background:#f8fafc; padding:8px; border-radius:8px; margin-top:5px; font-size:0.8rem; border-left:3px solid var(--primary)">👤 <b>${c.nomeCandidato}</b><br>${c.cargoPretendido}</div>`).join('')}
-            <button class="btn btn-delete" style="background:#fff1f2; color:#be123c; margin-top:10px; font-size:0.75rem; padding:8px;" onclick="eliminarVaga('${v.id}')">🗑️ Remover Vaga</button>
+          html += `<div style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;">
+            <b style="font-size:0.75rem;">Candidatos (${candDaVaga.length}):</b>
+            ${candDaVaga.map(c => `<div style="background:#f1f5f9; padding:5px; border-radius:5px; margin-top:5px; font-size:0.75rem;">👤 ${c.nomeCandidato}</div>`).join('')}
+            <button class="btn" style="background:#fee2e2; color:#ef4444; margin-top:10px; font-size:0.7rem;" onclick="eliminarVaga('${v.id}')">Excluir Vaga</button>
           </div>`;
       } else {
-          html += `<button class="btn btn-apply" onclick="candidatar('${v.id}', '${v.empresa}')">Candidatar-se Agora</button>`;
+          html += `<button class="btn btn-apply" onclick="candidatar('${v.id}', '${v.empresa}')">Candidatar-se</button>`;
       }
 
       card.innerHTML = html;
       list.appendChild(card);
-      
-      markers.push(new google.maps.Marker({ 
-          position: {lat: Number(v.lat), lng: Number(v.lng)}, 
-          map,
-          icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 10,
-              fillColor: "#4f46e5",
-              fillOpacity: 1,
-              strokeWeight: 2,
-              strokeColor: "#ffffff"
-          }
-      }));
+      markers.push(new google.maps.Marker({ position: {lat: Number(v.lat), lng: Number(v.lng)}, map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4f46e5", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } }));
     });
   }
 
-  // Funções Globais para o HTML
   window.toggleFav = (id) => {
       if(meusFavoritos.includes(id)) meusFavoritos = meusFavoritos.filter(favId => favId !== id);
       else meusFavoritos.push(id);
@@ -295,40 +278,32 @@
   window.candidatar = async (vagaId, empresaNome) => {
       const nome = document.getElementById('perfil-nome').value;
       const cargo = document.getElementById('perfil-cargo').value;
-      if(!nome || !cargo) return alert("Complete seu perfil (Nome e Cargo) antes de se candidatar!");
+      if(!nome || !cargo) return alert("Preencha seu nome e cargo no perfil!");
       await addDoc(collection(db, "candidaturas"), { vagaId, nomeCandidato: nome, cargoPretendido: cargo, paraEmpresa: empresaNome });
-      alert("Candidatura enviada com sucesso! Boa sorte!");
+      alert("Candidatura enviada!");
   };
 
   window.eliminarVaga = async (id) => {
-      if(confirm("Deseja apagar esta vaga?")) {
-          await deleteDoc(doc(db, "vagas", id));
-          alert("Vaga removida.");
-      }
+      if(confirm("Excluir vaga?")) { await deleteDoc(doc(db, "vagas", id)); alert("Excluída."); }
   };
 
   window.salvarPerfil = () => {
       localStorage.setItem('perfil_nome', document.getElementById('perfil-nome').value);
       localStorage.setItem('perfil_cargo', document.getElementById('perfil-cargo').value);
       localStorage.setItem('emp_nome', document.getElementById('emp-nome').value);
-      atualizarFiltros();
   };
-
   function carregarPerfil() {
       document.getElementById('perfil-nome').value = localStorage.getItem('perfil_nome') || '';
       document.getElementById('perfil-cargo').value = localStorage.getItem('perfil_cargo') || '';
       document.getElementById('emp-nome').value = localStorage.getItem('emp_nome') || '';
   }
-
   window.focarGPS = () => {
     navigator.geolocation.getCurrentPosition(pos => {
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      map.setCenter(userPos); 
-      circleVisual.setCenter(userPos);
+      map.setCenter(userPos); circleVisual.setCenter(userPos);
       atualizarFiltros();
     });
   };
-
   initMap();
 </script>
 </body>
