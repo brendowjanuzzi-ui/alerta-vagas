@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Alerta Vaga - Acesso</title>
+  <title>Alerta Vaga - Perfil Profissional</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
@@ -13,30 +13,35 @@
     * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { margin: 0; background: var(--bg); color: var(--dark); overflow: hidden; }
 
-    /* TELA DE LOGIN INICIAL */
+    /* TELA DE LOGIN */
     #auth-overlay { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .auth-card { background: white; padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; text-align: center; }
-    .auth-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; color: var(--dark); }
-    .auth-subtitle { color: #64748b; margin-bottom: 30px; font-size: 0.9rem; }
-    .auth-options { display: flex; flex-direction: column; gap: 12px; }
-    
-    .btn-auth { padding: 16px; border-radius: 12px; border: 2px solid var(--border); background: white; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .btn-auth:hover { border-color: var(--primary); background: #f5f3ff; }
+    .btn-auth { width: 100%; padding: 16px; border-radius: 12px; border: 2px solid var(--border); background: white; font-weight: 700; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
     .btn-auth.active { border-color: var(--primary); background: #eeebff; color: var(--primary); }
 
-    /* INTERFACE PRINCIPAL */
+    /* INTERFACE */
     header { background: var(--dark); color: white; padding: 16px 24px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
     #main-container { display: flex; height: calc(100vh - 65px); }
     #sidebar { width: 400px; background: var(--bg); padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); }
     #map { flex: 1; position: relative; }
 
-    .section-box { background: var(--card); padding: 18px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
+    /* CARD DE PERFIL */
+    .profile-card { background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 20px; padding: 20px; color: white; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); }
+    .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+    .profile-img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); }
+    .profile-info h3 { margin: 0; font-size: 1.1rem; }
+    .profile-info span { font-size: 0.75rem; opacity: 0.9; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; }
+    .profile-bio { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; font-size: 0.8rem; border: none; color: white; width: 100%; outline: none; resize: none; }
+    .profile-bio::placeholder { color: rgba(255,255,255,0.6); }
+
+    .section-box { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); border-left: 5px solid var(--primary); }
     
-    .vaga-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); }
-    .btn-apply { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-save { background: white; color: var(--primary); margin-top: 10px; font-size: 0.75rem; }
+    .btn-apply { background: var(--success); color: white; margin-top: 10px; }
     
     input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; }
-
     .hidden { display: none !important; }
   </style>
 </head>
@@ -44,48 +49,48 @@
 
 <div id="auth-overlay">
     <div class="auth-card">
-        <div class="auth-title">📍 Alerta Vaga</div>
-        <div class="auth-subtitle">Como você deseja acessar a plataforma hoje?</div>
-        
-        <div class="auth-options">
-            <button class="btn-auth" id="opt-candidato" onclick="window.selecionarPapel('candidato')">
-                👤 Sou Candidato
-            </button>
-            <button class="btn-auth" id="opt-empresa" onclick="window.selecionarPapel('empresa')">
-                🏢 Sou Empresa
-            </button>
-            
-            <hr style="width:100%; border:0; border-top:1px solid var(--border); margin:10px 0;">
-            
-            <button class="btn-auth" id="btn-login-google" style="background: var(--dark); color: white;" onclick="window.fazerLogin()" disabled>
-                Continuar com Google
-            </button>
-        </div>
+        <h2 style="margin-top:0">Bem-vindo!</h2>
+        <p style="color:#64748b">Escolha seu tipo de acesso:</p>
+        <button class="btn-auth" id="opt-candidato" onclick="window.selecionarPapel('candidato')">👤 Sou Candidato</button>
+        <button class="btn-auth" id="opt-empresa" onclick="window.selecionarPapel('empresa')">🏢 Sou Empresa</button>
+        <button class="btn" id="btn-login-google" style="background:var(--dark); color:white; margin-top:20px" onclick="window.fazerLogin()" disabled>Entrar com Google</button>
     </div>
 </div>
 
 <header>
-    <span>Alerta Vaga</span>
-    <div id="u-info" style="font-size: 0.8rem;"></div>
+    <span>📍 Alerta Vaga</span>
+    <button onclick="window.sair()" style="background:none; border:none; color:white; cursor:pointer; font-size:0.7rem">Sair da conta</button>
 </header>
 
 <div id="main-container">
   <div id="sidebar">
-    <div id="view-empresa" class="section-box hidden" style="border: 2px solid var(--accent);">
-        <h4 style="margin:0 0 10px 0; color: var(--accent);">Painel de Recrutamento</h4>
-        <input type="text" id="vaga-nome" placeholder="Nome da Empresa">
-        <input type="text" id="vaga-cargo" placeholder="Cargo">
-        <input type="text" id="vaga-contato" placeholder="E-mail ou WhatsApp">
-        <p style="font-size: 0.65rem; font-weight: 700;">TOQUE NO MAPA PARA MARCAR A VAGA 📍</p>
+    
+    <div class="profile-card">
+        <div class="profile-header">
+            <img id="p-img" class="profile-img" src="https://via.placeholder.com/60">
+            <div class="profile-info">
+                <h3 id="p-nome">Carregando...</h3>
+                <span id="p-tipo">Tipo de Conta</span>
+            </div>
+        </div>
+        <textarea id="p-bio" class="profile-bio" rows="2" placeholder="Sua bio ou cargo..."></textarea>
+        <button class="btn btn-save" onclick="window.salvarPerfil()">Salvar Perfil</button>
     </div>
 
-    <div id="view-candidato" class="section-box">
-        <label style="font-size: 0.8rem; font-weight: 700;">Raio de busca (KM): <span id="txt-km">5</span></label>
+    <div id="view-empresa" class="section-box hidden">
+        <h4 style="margin:0 0 10px 0; color:var(--accent)">Anunciar Nova Vaga</h4>
+        <input type="text" id="vaga-emp" placeholder="Nome da Empresa">
+        <input type="text" id="vaga-cargo" placeholder="Cargo">
+        <input type="text" id="vaga-contato" placeholder="WhatsApp ou E-mail">
+        <p style="font-size: 0.65rem; color:var(--accent); text-align:center"><b>CLIQUE NO MAPA PARA POSTAR</b></p>
+    </div>
+
+    <div id="view-candidato" class="section-box hidden">
+        <label style="font-size: 0.8rem; font-weight:700">Distância: <span id="txt-km">5</span> km</label>
         <input type="range" id="range-km" min="1" max="100" value="5" oninput="window.atualizarBusca()">
     </div>
 
     <div id="jobs-list"></div>
-    <button onclick="window.sair()" style="width:100%; background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; margin-top:20px;">Sair da Conta</button>
   </div>
 
   <div id="map"></div>
@@ -110,86 +115,87 @@
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  let map, circle, allVagas = [], markers = [], papelSelecionado = null;
+  let map, circle, allVagas = [], markers = [], papelS = null;
   let userPos = { lat: -19.919, lng: -43.938 };
 
-  // 1. SELEÇÃO DE PAPEL NO LOGIN
-  window.selecionarPapel = (papel) => {
-      papelSelecionado = papel;
-      document.getElementById('opt-candidato').classList.toggle('active', papel === 'candidato');
-      document.getElementById('opt-empresa').classList.toggle('active', papel === 'empresa');
+  window.selecionarPapel = (p) => {
+      papelS = p;
+      document.getElementById('opt-candidato').classList.toggle('active', p === 'candidato');
+      document.getElementById('opt-empresa').classList.toggle('active', p === 'empresa');
       document.getElementById('btn-login-google').disabled = false;
   };
 
   window.fazerLogin = () => signInWithPopup(auth, provider);
   window.sair = () => signOut(auth).then(() => location.reload());
 
-  // 2. MONITORAMENTO DE LOGIN
+  window.salvarPerfil = async () => {
+      const bio = document.getElementById('p-bio').value;
+      await setDoc(doc(db, "usuarios", auth.currentUser.uid), { bio }, { merge: true });
+      alert("Perfil atualizado!");
+  };
+
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-        let papelFinal = papelSelecionado;
+        let papelFinal = papelS;
         const d = await getDoc(doc(db, "usuarios", user.uid));
         
         if (d.exists()) {
             papelFinal = d.data().tipo;
-        } else if (papelFinal) {
-            await setDoc(doc(db, "usuarios", user.uid), { tipo: papelFinal, nome: user.displayName });
+            document.getElementById('p-bio').value = d.data().bio || "";
+        } else {
+            await setDoc(doc(db, "usuarios", user.uid), { tipo: papelFinal, bio: "" });
         }
 
         document.getElementById('auth-overlay').classList.add('hidden');
-        document.getElementById('u-info').innerText = `${user.displayName} (${papelFinal})`;
+        document.getElementById('p-nome').innerText = user.displayName;
+        document.getElementById('p-img').src = user.photoURL;
+        document.getElementById('p-tipo').innerText = papelFinal === 'empresa' ? "🏢 EMPRESA" : "👤 CANDIDATO";
         
-        if (papelFinal === 'empresa') {
-            document.getElementById('view-empresa').classList.remove('hidden');
-        } else {
-            document.getElementById('view-candidato').classList.remove('hidden');
-        }
-        window.papelAtual = papelFinal;
+        document.getElementById(papelFinal === 'empresa' ? 'view-empresa' : 'view-candidato').classList.remove('hidden');
+        window.tipoU = papelFinal;
         initMap();
     }
   });
 
-  // 3. MAPA E LÓGICA
   function initMap() {
     map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
     circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.1, strokeOpacity: 0, clickable: false });
 
     map.addListener('click', async (e) => {
-        if (window.papelAtual !== 'empresa') return;
-        const empresa = document.getElementById('vaga-nome').value;
-        const cargo = document.getElementById('vaga-cargo').value;
-        const contato = document.getElementById('vaga-contato').value;
-        
-        if (!empresa || !cargo || !contato) return alert("Preencha os dados da empresa e vaga!");
-        
-        await addDoc(collection(db, "vagas"), { empresa, cargo, contato, lat: e.latLng.lat(), lng: e.latLng.lng(), tipo: 'verificada' });
+        if (window.tipoU !== 'empresa') return;
+        const emp = document.getElementById('vaga-emp').value;
+        const car = document.getElementById('vaga-cargo').value;
+        const con = document.getElementById('vaga-contato').value;
+        if (!emp || !car || !con) return alert("Preencha os campos!");
+        await addDoc(collection(db, "vagas"), { emp, car, con, lat: e.latLng.lat(), lng: e.latLng.lng() });
         alert("Vaga publicada!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
-        allVagas = []; snap.forEach(d => allVagas.push(d.data()));
+        allVagas = []; snap.forEach(doc => allVagas.push(doc.data()));
         window.atualizarBusca();
     });
   }
 
   window.atualizarBusca = () => {
-    const km = document.getElementById('range-km').value;
-    document.getElementById('txt-km').innerText = km;
+    const km = document.getElementById('range-km')?.value || 5;
+    if(document.getElementById('txt-km')) document.getElementById('txt-km').innerText = km;
     circle.setRadius(km * 1000);
-    renderizar(allVagas.filter(v => {
+    const filtradas = allVagas.filter(v => {
         const d = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng));
         return d <= (km * 1000);
-    }));
+    });
+    render(filtradas);
   };
 
-  function renderizar(vagas) {
+  function render(vagas) {
     const list = document.getElementById('jobs-list');
     list.innerHTML = ""; markers.forEach(m => m.setMap(null));
     vagas.forEach(v => {
         const card = document.createElement('div');
         card.className = "vaga-card";
-        card.innerHTML = `<strong>${v.empresa}</strong><br><span>${v.cargo}</span>
-                          <button class="btn-apply" onclick="window.candidatar('${v.contato}')">Candidatar-se</button>`;
+        card.innerHTML = `<strong>${v.emp}</strong><br><span>${v.car}</span>
+                          <button class="btn btn-apply" onclick="window.candidatar('${v.con}')">Selecionar Vaga</button>`;
         list.appendChild(card);
         markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
