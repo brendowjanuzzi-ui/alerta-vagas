@@ -9,120 +9,92 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
 
   <style>
-    :root { --primary: #0a66c2; --bg: #f3f2ef; --dark: #000000; --card: #ffffff; --border: #e0e0e0; --text-sec: #666666; --accent: #057642; }
+    :root { --primary: #0a66c2; --bg: #f3f2ef; --border: #e0e0e0; --text: #000000; }
     * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--dark); overflow: hidden; }
+    body { margin: 0; background: var(--bg); overflow: hidden; }
 
-    /* HEADER RESTAURADO */
-    header { background: #ffffff; padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 100; position: relative; }
+    /* HEADER */
+    header { background: #fff; padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; height: 65px; }
     .logo-title { color: var(--primary); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-    .pulse-icon { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite; }
+    .pulse { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); } }
 
-    #main-container { display: flex; height: calc(100vh - 65px); }
-    #sidebar { width: 400px; background: var(--bg); padding: 15px; overflow-y: auto; border-right: 1px solid var(--border); }
-    #map { flex: 1; position: relative; }
+    #container { display: flex; height: calc(100vh - 65px); }
+    #sidebar { width: 380px; background: var(--bg); padding: 15px; overflow-y: auto; border-right: 1px solid var(--border); }
+    #map { flex: 1; background: #ddd; }
 
-    /* CARD DE PERFIL LINKEDIN */
-    .profile-card { background: white; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px; text-align: center; padding-bottom: 15px; }
-    .profile-banner { height: 50px; background: var(--primary); }
-    .profile-photo { width: 70px; height: 70px; border-radius: 50%; border: 4px solid white; margin-top: -35px; background: #eee; object-fit: cover; }
+    /* CARDS */
+    .card { background: white; border-radius: 10px; border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; }
+    .profile-header { height: 50px; background: var(--primary); margin: -15px -15px 10px -15px; border-radius: 9px 9px 0 0; }
+    .job-card { background: white; border-radius: 8px; border: 1px solid var(--border); padding: 15px; margin-bottom: 10px; }
     
-    .panel { background: white; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; }
-    .job-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
-    
-    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 10px; }
-    .btn-sec { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 8px; border-radius: 20px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.8rem; }
+    .btn-main { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 700; cursor: pointer; width: 100%; }
+    .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px; border-radius: 20px; width: 100%; cursor: pointer; font-size: 0.8rem; margin-top: 5px; }
 
-    /* MODAL DE LOGIN MELHORADO */
-    #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-    
-    .login-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-    .btn-social { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
-    .btn-apple { background: #000; color: white; border: none; }
-
+    /* MODAL */
+    #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 15px; width: 350px; text-align: center; }
+    input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; }
     .hidden { display: none !important; }
-    input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 8px; }
   </style>
 </head>
 <body>
 
-<div id="recaptcha-container"></div>
-
 <header>
-    <div class="logo-title"><div class="pulse-icon"></div> Alerta Vagas Próximas de Você</div>
-    <div>
-        <button id="btn-entrar" class="btn-main" style="padding: 8px 20px; width: auto; margin:0;" onclick="window.mostrarLogin()">Entrar</button>
-        <button id="btn-sair" class="btn-sec" style="display:none; width: auto;" onclick="window.logout()">Sair</button>
-    </div>
+    <div class="logo-title"><div class="pulse"></div> Alerta Vagas Próximas de Você</div>
+    <button id="btn-login-trigger" class="btn-main" style="width:auto" onclick="window.abrirModal()">Entrar</button>
+    <button id="btn-logout" class="btn-outline" style="display:none; width:auto" onclick="window.sair()">Sair</button>
 </header>
 
-<div id="main-container">
+<div id="container">
     <div id="sidebar">
-        <div id="user-info" class="profile-card hidden">
-            <div class="profile-banner"></div>
-            <img id="u-photo" class="profile-photo" src="">
-            <div id="u-name" style="font-weight: 700; margin-top: 5px;"></div>
-            <div id="u-role" style="font-size: 0.7rem; color: var(--text-sec); margin-bottom: 10px;"></div>
-            <button class="btn-sec" style="border:none; text-decoration:underline;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
+        <div id="user-card" class="card hidden">
+            <div class="profile-header"></div>
+            <div id="user-name" style="font-weight:700">Usuário</div>
+            <div id="user-role" style="font-size:0.75rem; color:#666; margin-bottom:10px;">Candidato</div>
+            <button class="btn-outline" onclick="window.trocar()">Mudar para Empresa</button>
         </div>
 
-        <div id="panel-empresa" class="panel hidden" style="border-left: 5px solid var(--accent);">
-            <h4 style="margin: 0 0 10px 0;">Postar Vaga 📍</h4>
-            <input type="text" id="v-emp" placeholder="Nome da Empresa">
-            <input type="text" id="v-cargo" placeholder="Cargo">
-            <input type="text" id="v-wa" placeholder="WhatsApp">
-            <input type="text" id="v-email" placeholder="E-mail">
-            <p style="font-size:0.6rem; color: var(--accent)">Clique no mapa para marcar o local da vaga</p>
+        <div id="search-box" class="card">
+            <label style="font-size:0.8rem; font-weight:700">Ver vagas em <span id="val">5</span> km</label>
+            <input type="range" id="range" min="1" max="50" value="5" oninput="window.atualizar()">
         </div>
 
-        <div id="panel-candidato" class="panel">
-            <label style="font-size: 0.8rem; font-weight: 700;">Buscar vagas em <span id="km-val">5</span> km</label>
-            <input type="range" id="range-km" min="1" max="50" value="5" oninput="window.atualizar()">
+        <div id="post-box" class="card hidden" style="border-top: 4px solid var(--primary)">
+            <h4 style="margin:0 0 10px 0">Nova Vaga</h4>
+            <input id="v-cargo" placeholder="Cargo">
+            <input id="v-emp" placeholder="Empresa">
+            <input id="v-contato" placeholder="WhatsApp ou E-mail">
+            <p style="font-size:0.6rem; color:var(--primary)">Toque no mapa para marcar o local</p>
         </div>
 
-        <div id="jobs-list"></div>
+        <div id="list"></div>
     </div>
     <div id="map"></div>
 </div>
 
-<div id="login-modal">
-    <div class="modal-box">
-        <h3>Acesse sua conta</h3>
-        <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Como deseja utilizar o Alerta Vagas?</p>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button id="sel-c" class="btn-sec" style="margin:0" onclick="window.prepararPapel('candidato')">Candidato</button>
-            <button id="sel-e" class="btn-sec" style="margin:0" onclick="window.prepararPapel('empresa')">Empresa</button>
+<div id="modal">
+    <div class="modal-content">
+        <h3>Acesse sua Conta</h3>
+        <div style="display:flex; gap:10px; margin-bottom:15px">
+            <button id="sc" class="btn-outline" onclick="window.setRole('candidato')">Candidato</button>
+            <button id="se" class="btn-outline" onclick="window.setRole('empresa')">Empresa</button>
         </div>
-
-        <div id="auth-ui" style="opacity: 0.4; pointer-events: none;">
-            <input type="email" id="auth-email" placeholder="Seu e-mail">
-            <input type="password" id="auth-pass" placeholder="Sua senha">
-            <button class="btn-main" onclick="window.authEmail()">Entrar / Cadastrar</button>
-
-            <div style="margin:15px 0; font-size:0.7rem; color:#aaa; text-transform:uppercase;">Ou acesse com</div>
-
-            <div class="login-grid">
-                <button class="btn-social" onclick="window.loginGoogle()">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Google
-                </button>
-                <button class="btn-social btn-apple" onclick="window.loginApple()">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="14" style="filter:invert(1)"> Apple
-                </button>
-            </div>
-            <button class="btn-sec" style="margin-top:10px; width:100%" onclick="window.loginTelefone()">📱 Entrar com Smartphone</button>
+        <div id="fields" style="opacity:0.3; pointer-events:none">
+            <input id="e" placeholder="E-mail">
+            <input id="p" type="password" placeholder="Senha">
+            <button class="btn-main" onclick="window.auth()">Entrar / Cadastrar</button>
+            <hr style="margin:15px 0; border:0; border-top:1px solid #eee">
+            <button class="btn-outline" onclick="window.google()">Logar com Google</button>
         </div>
-
-        <button style="background:none; border:none; margin-top:20px; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao Mapa</button>
+        <button style="border:none; background:none; margin-top:15px; color:#999; cursor:pointer" onclick="window.fecharModal()">Voltar</button>
     </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
@@ -136,106 +108,82 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  const googleP = new GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
 
-  let map, circle, allVagas = [], markers = [], papelS = null, userRole = 'visitante';
-  let userPos = { lat: -19.919, lng: -43.938 };
+  let map, circle, all = [], markers = [], papel = null, role = 'visitante';
+  let pos = { lat: -19.919, lng: -43.938 };
 
-  // FUNÇÕES DE LOGIN
-  window.mostrarLogin = () => document.getElementById('login-modal').style.display='flex';
-  window.fecharLogin = () => document.getElementById('login-modal').style.display='none';
-  window.prepararPapel = (p) => {
-      papelS = p;
-      document.getElementById('auth-ui').style.opacity = '1';
-      document.getElementById('auth-ui').style.pointerEvents = 'auto';
-      document.getElementById('sel-c').style.background = p === 'candidato' ? '#e1effe' : 'white';
-      document.getElementById('sel-e').style.background = p === 'empresa' ? '#def7ec' : 'white';
+  window.abrirModal = () => document.getElementById('modal').style.display='flex';
+  window.fecharModal = () => document.getElementById('modal').style.display='none';
+  window.setRole = (r) => { 
+      papel = r; 
+      document.getElementById('fields').style.opacity = '1';
+      document.getElementById('fields').style.pointerEvents = 'auto';
   };
 
-  window.loginGoogle = () => signInWithPopup(auth, googleP).then(window.fecharLogin);
-  window.loginApple = () => signInWithPopup(auth, new OAuthProvider('apple.com')).then(window.fecharLogin);
-  
-  window.authEmail = async () => {
-      const email = document.getElementById('auth-email').value;
-      const pass = document.getElementById('auth-pass').value;
-      try {
-          await signInWithEmailAndPassword(auth, email, pass);
-      } catch (e) {
-          if (e.code === 'auth/user-not-found') await createUserWithEmailAndPassword(auth, email, pass);
-          else alert(e.message);
+  window.google = () => signInWithPopup(auth, provider).then(window.fecharModal);
+  window.auth = async () => {
+      const email = document.getElementById('e').value;
+      const pass = document.getElementById('p').value;
+      try { await signInWithEmailAndPassword(auth, email, pass); }
+      catch { await createUserWithEmailAndPassword(auth, email, pass); }
+      window.fecharModal();
+  };
+  window.sair = () => signOut(auth).then(() => location.reload());
+
+  onAuthStateChanged(auth, async (u) => {
+      if (u) {
+          document.getElementById('btn-login-trigger').style.display = 'none';
+          document.getElementById('btn-logout').style.display = 'block';
+          document.getElementById('user-card').classList.remove('hidden');
+          const d = await getDoc(doc(db, "usuarios", u.uid));
+          role = d.exists() ? d.data().tipo : papel;
+          if(!d.exists() && papel) await setDoc(doc(db, "usuarios", u.uid), { tipo: papel });
+          document.getElementById('user-name').innerText = u.displayName || u.email;
+          document.getElementById('user-role').innerText = role === 'empresa' ? '🏢 Empresa' : '👤 Candidato';
+          if(role === 'empresa') document.getElementById('post-box').classList.remove('hidden');
       }
-      window.fecharLogin();
-  };
-
-  window.loginTelefone = async () => {
-      const tel = prompt("Digite seu telefone com DDD (Ex: +5511999999999):");
-      if(!tel) return;
-      const recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', {size: 'invisible'});
-      const confirmation = await signInWithPhoneNumber(auth, tel, recaptcha);
-      const code = prompt("Digite o código de 6 dígitos enviado por SMS:");
-      await confirmation.confirm(code);
-      window.fecharLogin();
-  };
-
-  window.logout = () => signOut(auth).then(() => location.reload());
-
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        document.getElementById('btn-entrar').style.display = 'none';
-        document.getElementById('btn-sair').style.display = 'block';
-        document.getElementById('user-info').classList.remove('hidden');
-        const d = await getDoc(doc(db, "usuarios", user.uid));
-        userRole = d.exists() ? d.data().tipo : papelS;
-        if (!d.exists() && papelS) await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS });
-        document.getElementById('u-name').innerText = user.displayName || user.email || user.phoneNumber;
-        document.getElementById('u-photo').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-        document.getElementById('u-role').innerText = userRole.toUpperCase();
-        if (userRole === 'empresa') {
-            document.getElementById('panel-empresa').classList.remove('hidden');
-            document.getElementById('panel-candidato').classList.add('hidden');
-        }
-    }
-    initMap();
+      initMap();
   });
 
   function initMap() {
-    if (map) return;
-    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
-    circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0, clickable: false });
-    map.addListener('click', async (e) => {
-        if (userRole !== 'empresa') return;
-        const emp = document.getElementById('v-emp').value;
-        const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha Empresa e Cargo!");
-        await addDoc(collection(db, "vagas"), { emp, cargo: car, wa: document.getElementById('v-wa').value, mail: document.getElementById('v-email').value, lat: e.latLng.lat(), lng: e.latLng.lng() });
-    });
-    onSnapshot(collection(db, "vagas"), (snap) => {
-        allVagas = []; snap.forEach(d => allVagas.push(d.data()));
-        window.atualizar();
-    });
+      if (map) return;
+      map = new google.maps.Map(document.getElementById('map'), { center: pos, zoom: 14, disableDefaultUI: true });
+      circle = new google.maps.Circle({ map, center: pos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0, clickable: false });
+      
+      map.addListener('click', async (e) => {
+          if (role !== 'empresa') return;
+          const cargo = document.getElementById('v-cargo').value;
+          const emp = document.getElementById('v-emp').value;
+          if(!cargo || !emp) return alert("Preencha os dados da vaga!");
+          await addDoc(collection(db, "vagas"), { cargo, emp, contato: document.getElementById('v-contato').value, lat: e.latLng.lat(), lng: e.latLng.lng() });
+      });
+
+      onSnapshot(collection(db, "vagas"), (snap) => {
+          all = []; snap.forEach(doc => all.push(doc.data()));
+          window.atualizar();
+      });
   }
 
   window.atualizar = () => {
-    const km = document.getElementById('range-km').value;
-    document.getElementById('km-val').innerText = km;
-    if(circle) circle.setRadius(km * 1000);
-    render(allVagas.filter(v => google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng)) <= (km * 1000)));
+      const km = document.getElementById('range').value;
+      document.getElementById('val').innerText = km;
+      if(circle) circle.setRadius(km * 1000);
+      const filtered = all.filter(v => google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(pos.lat, pos.lng), new google.maps.LatLng(v.lat, v.lng)) <= (km * 1000));
+      render(filtered);
   };
 
   function render(vagas) {
-    const list = document.getElementById('jobs-list');
-    list.innerHTML = ""; markers.forEach(m => m.setMap(null));
-    vagas.forEach(v => {
-        const card = document.createElement('div');
-        card.className = "job-card";
-        card.innerHTML = `<div style="font-weight:700; color:var(--primary);">${v.cargo}</div><div style="font-size:0.8rem; font-weight:600;">${v.emp}</div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                ${v.wa ? `<button class="btn-sec" style="font-size:0.65rem;" onclick="window.open('https://wa.me/${v.wa.replace(/\D/g,'')}')">WhatsApp</button>` : ''}
-                ${v.mail ? `<button class="btn-sec" style="font-size:0.65rem;" onclick="window.location.href='mailto:${v.mail}'">E-mail</button>` : ''}
-            </div>`;
-        list.appendChild(card);
-        markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
-    });
+      const list = document.getElementById('list');
+      list.innerHTML = ""; markers.forEach(m => m.setMap(null));
+      vagas.forEach(v => {
+          const div = document.createElement('div');
+          div.className = "job-card";
+          div.innerHTML = `<div style="color:var(--primary); font-weight:700">${v.cargo}</div><div>${v.emp}</div>
+          <button class="btn-outline" onclick="alert('Contato: ${v.contato}')">Ver Contato</button>`;
+          list.appendChild(div);
+          markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
+      });
   }
 </script>
 </body>
