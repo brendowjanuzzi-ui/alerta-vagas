@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Alerta Vaga Próximo de Você</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
+
+  <style>
+    :root { --primary: #4f46e5; --bg: #f1f5f9; --dark: #1e293b; --card: #ffffff; --danger: #ef4444; --border: #e2e8f0; }
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { margin: 0; background: var(--bg); overflow: hidden; color: var(--dark); }
+
+    header { background: var(--dark); color: white; padding: 14px 24px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; }
+    
+    #main-container { display: flex; height: calc(100vh - 62px); }
+    #sidebar { width: 400px; background: var(--bg); padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); }
+    #map { flex: 1; height: 100%; position: relative; }
+
+    .section-box { background: var(--card); padding: 18px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
+    .corporate { border-top: 4px solid var(--primary); }
+    
+    .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #e2e8f0; padding: 5px; border-radius: 12px; }
+    .tab-btn { flex: 1; padding: 8px; border-radius: 8px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: 0.2s; }
+    .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 0.95rem; outline: none; background: #f8fafc; }
+    
+    .vaga-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); position: relative; }
+    .fav-icon { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.2s; }
+    .fav-icon.active { filter: grayscale(0); }
+    
+    .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+    .btn-apply { background: var(--primary); color: white; margin-top: 8px; }
+    .btn-delete { background: #fee2e2; color: var(--danger); margin-top: 15px; font-size: 0.75rem; padding: 8px; }
+    .btn-delete:hover { background: #fecaca; }
+
+    .candidato-info { background: #f8fafc; padding: 10px; border-radius: 10px; margin-top: 8px; border-left: 4px solid var(--primary); font-size: 0.8rem; }
+
+    .gps-btn { position: absolute; bottom: 30px; right: 30px; background: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); cursor: pointer; z-index: 100; font-size: 22px; }
+
+    @media (max-width: 768px) { #main-container { flex-direction: column-reverse; } #sidebar { width: 100%; height: 65vh; } #map { height: 35vh; } }
+  </style>
+</head>
+<body>
+
+<header>
+    <span>📍 Alerta Vaga Próximo de Você</span>
+</header>
+
+<div id="main-container">
+  <div id="sidebar">
+    
+    <div class="section-box">
+      <h4>👤 Perfil do Candidato</h4>
+      <input type="text" id="perfil-nome" placeholder="Seu nome" onchange="salvarPerfil()">
+      <input type="text" id="perfil-cargo" placeholder="Cargo pretendido" onchange="salvarPerfil()">
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="btn-vagas" onclick="setTab('vagas')">Explorar</button>
+        <button class="tab-btn" id="btn-favs" onclick="setTab('favs')">Favoritos ❤️</button>
+        <button class="tab-btn" id="btn-minhas" onclick="setTab('minhas')">Minhas Vagas</button>
+    </div>
+
+    <div id="area-filtros">
+        <div class="section-box">
+          <input type="text" id="cand-busca" placeholder="Filtrar por cargo ou empresa..." onkeyup="atualizarFiltros()">
+          <label style="font-size: 0.75rem; font-weight:600;">Raio de busca: <span id="raio-txt">5 km</span></label>
+          <input type="range" id="rangeRaio" min="1" max="50" value="5" oninput="atualizarFiltros()">
+        </div>
+    </div>
+
+    <div id="area-publicar" class="section-box corporate">
+      <h4>🏢 Publicar Vaga (Empresa)</h4>
+      <input type="text" id="emp-nome" placeholder="Nome da Empresa" onchange="salvarPerfil()">
+      <input type="text" id="emp-profissao" placeholder="Cargo da Vaga">
+      <textarea id="emp-desc" placeholder="Descrição e requisitos..."></textarea>
+      <p style="font-size: 0.65rem; color: var(--primary); text-align:center; font-weight:600;">Toque no mapa para publicar a vaga</p>
+    </div>
+
+    <div id="jobs-list"></div>
+  </div>
+
+  <div id="map">
+      <div class="gps-btn" onclick="focarGPS()">🎯</div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
+    authDomain: "alertavaga-56b46.firebaseapp.com",
+    projectId: "alertavaga-56b46",
+    storageBucket: "alertavaga-56b46.firebasestorage.app",
+    messagingSenderId: "1006667244458",
+    appId: "1:1006667244458:web:4c2f35f5520843452c01d3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let map, allVagas = [], markers = [], circleVisual, currentTab = 'vagas';
+  let userPos = { lat: -23.5505, lng: -46.6333 };
+  let candidaturas = [];
+  let meusFavoritos = JSON.parse(localStorage.getItem('favs_ids') || '[]');
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
+    circleVisual = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#4f46e5", fillOpacity: 0.08, strokeOpacity: 0.2, clickable: false });
+
+    map.addListener('click', async (e) => {
+      const empresa = document.getElementById('emp-nome').value.trim();
+      const prof = document.getElementById('emp-profissao').value.trim();
+      if (empresa && prof && confirm(`Publicar vaga em "${empresa}"?`)) {
+          await addDoc(collection(db, "vagas"), {
+            empresa, profissao: prof, descricao: document.getElementById('emp-desc').value,
+            lat: e.latLng.lat(), lng: e.latLng.lng(), criadoPor: empresa, data: Date.now()
+          });
+          alert("Vaga publicada com sucesso!");
+      }
+    });
+
+    carregarPerfil();
+    focarGPS();
+    escutarDados();
+  }
+
+  function escutarDados() {
+    onSnapshot(collection(db, "vagas"), (snap) => {
+      allVagas = []; snap.forEach(d => allVagas.push({ id: d.id, ...d.data() }));
+      atualizarFiltros();
+    });
+    onSnapshot(collection(db, "candidaturas"), (snap) => {
+      candidaturas = []; snap.forEach(d => candidaturas.push({ id: d.id, ...d.data() }));
+      atualizarFiltros();
+    });
+  }
+
+  window.eliminarVaga = async (id) => {
+      if(confirm("Tem certeza que deseja remover esta vaga permanentemente?")) {
+          try {
+              // 1. Apaga a vaga
+              await deleteDoc(doc(db, "vagas", id));
+              
+              // 2. Apaga candidaturas vinculadas a este ID (opcional, para limpar o banco)
+              const q = query(collection(db, "candidaturas"), where("vagaId", "==", id));
+              const snap = await getDocs(q);
+              snap.forEach(async (cDoc) => {
+                  await deleteDoc(doc(db, "candidaturas", cDoc.id));
+              });
+
+              alert("Vaga removida!");
+          } catch (e) { alert("Erro ao eliminar vaga."); }
+      }
+  };
+
+  window.setTab = (t) => {
+      currentTab = t;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-' + t).classList.add('active');
+      document.getElementById('area-filtros').style.display = t === 'vagas' ? 'block' : 'none';
+      document.getElementById('area-publicar').style.display = t === 'vagas' ? 'block' : 'none';
+      atualizarFiltros();
+  };
+
+  window.toggleFav = (id) => {
+      if(meusFavoritos.includes(id)) meusFavoritos = meusFavoritos.filter(favId => favId !== id);
+      else meusFavoritos.push(id);
+      localStorage.setItem('favs_ids', JSON.stringify(meusFavoritos));
+      atualizarFiltros();
+  };
+
+  window.atualizarFiltros = () => {
+    const km = document.getElementById('rangeRaio').value;
+    const busca = document.getElementById('cand-busca').value.toLowerCase();
+    const minhaEmpresa = document.getElementById('emp-nome').value;
+    document.getElementById('raio-txt').innerText = km + " km";
+    circleVisual.setRadius(km * 1000);
+
+    let filtradas = allVagas.filter(v => {
+      const dist = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng));
+      v.distanciaKm = (dist / 1000).toFixed(1);
+
+      if (currentTab === 'minhas') return v.criadoPor === minhaEmpresa;
+      if (currentTab === 'favs') return meusFavoritos.includes(v.id);
+      return dist <= (km * 1000) && (v.profissao.toLowerCase().includes(busca) || v.empresa.toLowerCase().includes(busca));
+    });
+    renderVagas(filtradas);
+  };
+
+  function renderVagas(vagas) {
+    const list = document.getElementById('jobs-list');
+    list.innerHTML = ""; markers.forEach(m => m.setMap(null)); markers = [];
+
+    vagas.forEach(v => {
+      const isFav = meusFavoritos.includes(v.id);
+      const candDaVaga = candidaturas.filter(c => c.vagaId === v.id);
+      const card = document.createElement('div');
+      card.className = 'vaga-card';
+      
+      let html = `
+        <span class="fav-icon ${isFav ? 'active' : ''}" onclick="toggleFav('${v.id}')">❤️</span>
+        <div style="font-size:0.7rem; color:var(--primary); font-weight:700; text-transform:uppercase;">${v.empresa}</div>
+        <strong>${v.profissao}</strong>
+        <p style="font-size:0.8rem; margin:5px 0;">📍 ${v.distanciaKm} km de distância</p>
+      `;
+
+      if (currentTab === 'minhas') {
+          html += `<div style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;">
+            <b style="font-size:0.75rem;">Candidatos (${candDaVaga.length}):</b>
+            ${candDaVaga.map(c => `<div class="candidato-info">👤 <b>${c.nomeCandidato}</b><br><small>Cargo pretendido: ${c.cargoPretendido}</small></div>`).join('')}
+            <button class="btn btn-delete" onclick="eliminarVaga('${v.id}')">🗑️ Eliminar Vaga</button>
+          </div>`;
+      } else {
+          html += `<button class="btn btn-apply" onclick="candidatar('${v.id}', '${v.empresa}')">Candidatar-se</button>`;
+      }
+
+      card.innerHTML = html;
+      list.appendChild(card);
+      markers.push(new google.maps.Marker({ position: {lat: Number(v.lat), lng: Number(v.lng)}, map }));
+    });
+  }
+
+  window.candidatar = async (vagaId, empresaNome) => {
+      const nome = document.getElementById('perfil-nome').value;
+      const cargo = document.getElementById('perfil-cargo').value;
+      if(!nome || !cargo) return alert("Por favor, preencha seu Nome e Cargo Pretendido no perfil!");
+      await addDoc(collection(db, "candidaturas"), { vagaId, nomeCandidato: nome, cargoPretendido: cargo, paraEmpresa: empresaNome });
+      alert("Candidatura enviada!");
+  };
+
+  window.salvarPerfil = () => {
+      localStorage.setItem('perfil_nome', document.getElementById('perfil-nome').value);
+      localStorage.setItem('perfil_cargo', document.getElementById('perfil-cargo').value);
+      localStorage.setItem('emp_nome', document.getElementById('emp-nome').value);
+  };
+  function carregarPerfil() {
+      document.getElementById('perfil-nome').value = localStorage.getItem('perfil_nome') || '';
+      document.getElementById('perfil-cargo').value = localStorage.getItem('perfil_cargo') || '';
+      document.getElementById('emp-nome').value = localStorage.getItem('emp_nome') || '';
+  }
+  window.focarGPS = () => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      map.setCenter(userPos); circleVisual.setCenter(userPos);
+      atualizarFiltros();
+    });
+  };
+  initMap();
+</script>
+</body>
+</html>
