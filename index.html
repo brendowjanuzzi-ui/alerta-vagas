@@ -36,13 +36,19 @@
     
     .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 10px; }
     .btn-sec { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 8px; border-radius: 20px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.8rem; margin-top: 5px; }
+    
+    /* Novos Botões Sociais */
     .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-apple { background: #000; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+    .btn-phone { background: #25d366; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
 
     .badge { font-size: 0.65rem; font-weight: 800; padding: 2px 10px; border-radius: 10px; text-transform: uppercase; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
+
+<div id="recaptcha-container"></div>
 
 <header>
     <div class="logo-title"><div class="pulse-icon"></div> Alerta Vagas Próximas de Você</div>
@@ -111,6 +117,14 @@
             <button class="btn-main btn-google" onclick="window.loginGoogle()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
             </button>
+
+            <button class="btn-main btn-apple" onclick="window.loginApple()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter: invert(1);"> Apple
+            </button>
+
+            <button class="btn-main btn-phone" onclick="window.loginTelefone()">
+                📱 Smartphone (SMS)
+            </button>
         </div>
 
         <button style="background:none; border:none; margin-top:15px; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao Mapa</button>
@@ -120,7 +134,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
@@ -172,6 +186,26 @@
   };
 
   window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
+
+  // LÓGICA APPLE
+  window.loginApple = () => {
+      const appleProvider = new OAuthProvider('apple.com');
+      signInWithPopup(auth, appleProvider).then(window.fecharLogin).catch(e => alert(e.message));
+  };
+
+  // LÓGICA TELEFONE
+  window.loginTelefone = async () => {
+      const tel = prompt("Digite seu número com +55 e DDD (Ex: +5511999999999):");
+      if(!tel) return;
+      const recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', {'size': 'invisible'});
+      try {
+          const confirmation = await signInWithPhoneNumber(auth, tel, recaptcha);
+          const code = prompt("Digite o código de 6 dígitos que recebeu por SMS:");
+          await confirmation.confirm(code);
+          window.fecharLogin();
+      } catch (e) { alert("Erro Telefone: " + e.message); }
+  };
+
   window.logout = () => signOut(auth).then(() => location.reload());
 
   onAuthStateChanged(auth, async (user) => {
@@ -182,7 +216,7 @@
         const d = await getDoc(doc(db, "usuarios", user.uid));
         userRole = d.exists() ? d.data().tipo : papelS;
         if (!d.exists() && papelS) await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS });
-        document.getElementById('u-name').innerText = user.displayName || user.email.split('@')[0];
+        document.getElementById('u-name').innerText = user.displayName || user.email?.split('@')[0] || user.phoneNumber;
         document.getElementById('u-photo').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         document.getElementById('u-badge-container').innerHTML = `<span class="badge" style="background:#eee">${userRole}</span>`;
         if (userRole === 'empresa') {
@@ -214,7 +248,7 @@
   window.atualizar = () => {
     const km = document.getElementById('range-km').value;
     document.getElementById('km-val').innerText = km;
-    circle.setRadius(km * 1000);
+    if(circle) circle.setRadius(km * 1000);
     render(allVagas.filter(v => google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng)) <= (km * 1000)));
   };
 
