@@ -22,23 +22,25 @@
     #sidebar { width: 400px; background: var(--bg); padding: 15px; overflow-y: auto; border-right: 1px solid var(--border); }
     #map { flex: 1; position: relative; }
 
-    /* MODAL LOGIN */
-    #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
-    .modal-box { background: white; padding: 25px; border-radius: 15px; width: 380px; text-align: center; max-height: 90vh; overflow-y: auto; }
-    
     .profile-card { background: white; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px; text-align: center; padding-bottom: 15px; }
     .profile-banner { height: 50px; background: var(--primary); }
     .profile-photo { width: 70px; height: 70px; border-radius: 50%; border: 4px solid white; margin-top: -35px; background: #eee; object-fit: cover; }
     
-    .form-group { text-align: left; margin-bottom: 12px; }
-    .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 4px; }
-    input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); outline: none; margin-bottom: 8px; }
+    input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); outline: none; margin-bottom: 8px; font-size: 0.9rem; }
     
     .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 10px; }
     .btn-sec { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 8px; border-radius: 20px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.8rem; margin-top: 5px; }
     
+    /* Estilos Sociais Restaurados */
+    .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-apple { background: #000; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-phone { background: #25d366; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
     .badge { font-size: 0.65rem; font-weight: 800; padding: 2px 10px; border-radius: 10px; text-transform: uppercase; color: white; }
     .hidden { display: none !important; }
+
+    #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-box { background: white; padding: 25px; border-radius: 15px; width: 380px; text-align: center; max-height: 90vh; overflow-y: auto; }
   </style>
 </head>
 <body>
@@ -60,18 +62,21 @@
             <img id="u-photo" class="profile-photo" src="">
             <div id="u-name" style="font-weight: 700; margin-top: 5px;"></div>
             <div id="u-badge-container" style="margin: 5px 0;"></div>
-            <button class="btn-sec" style="border:none; color: #666; text-decoration: underline;" onclick="window.trocarPerfil()">Mudar Perfil</button>
+            
+            <div id="area-cargo-candidato" class="hidden" style="padding: 0 15px;">
+                <input type="text" id="u-cargo-input" placeholder="Qual cargo você procura?" style="text-align: center; border-color: #0a66c2;" onblur="window.salvarCargoPretendido()">
+            </div>
+
+            <button class="btn-sec" style="border:none; color: #666; text-decoration: underline; font-size: 0.7rem;" onclick="window.trocarPerfil()">Trocar Tipo de Perfil</button>
         </div>
 
         <div id="panel-empresa" class="hidden" style="background:white; padding:15px; border-radius:10px; border:1px solid var(--border); border-left: 5px solid var(--accent); margin-bottom: 15px;">
             <h4 style="margin: 0 0 10px 0; color: var(--accent);">Postar Nova Vaga 📍</h4>
             <input type="text" id="v-emp" placeholder="Nome da Empresa">
             <input type="text" id="v-cargo" placeholder="Cargo (Ex: Vendedor)">
-            <input type="text" id="v-wa" placeholder="WhatsApp (DDD + Número)">
-            <input type="text" id="v-email" placeholder="E-mail de Contato">
-            <div style="background: #e7f3ed; color: #057642; padding: 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-top: 5px;">
-                ⚠️ Agora toque no local da vaga no mapa para salvar.
-            </div>
+            <input type="text" id="v-wa" placeholder="WhatsApp">
+            <input type="text" id="v-email" placeholder="E-mail">
+            <p style="background: #e7f3ed; color: #057642; padding: 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Toque no mapa para salvar o local.</p>
         </div>
 
         <div id="panel-candidato" style="background:white; padding:15px; border-radius:10px; border:1px solid var(--border);">
@@ -86,23 +91,32 @@
 
 <div id="login-modal">
     <div class="modal-box">
-        <h3 id="modal-title">Entrar no Alerta Vagas</h3>
-        <p style="font-size:0.8rem; color:#666">Selecione seu tipo de conta:</p>
+        <h3>Acesse sua Conta</h3>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button id="sel-c" class="btn-sec" style="margin:0" onclick="window.prepararPapel('candidato')">Sou Candidato</button>
-            <button id="sel-e" class="btn-sec" style="margin:0" onclick="window.prepararPapel('empresa')">Sou Empresa</button>
+            <button id="sel-c" class="btn-sec" onclick="window.prepararPapel('candidato')">Candidato</button>
+            <button id="sel-e" class="btn-sec" onclick="window.prepararPapel('empresa')">Empresa</button>
         </div>
-
-        <div id="auth-fields" style="opacity:0.5; pointer-events:none;">
+        
+        <div id="auth-fields" style="opacity:0.3; pointer-events:none;">
             <input type="email" id="auth-email" placeholder="E-mail">
-            <input type="password" id="auth-pass" placeholder="Senha (min 6 chars)">
-            <button class="btn-main" onclick="window.authEmail()">Entrar / Cadastrar</button>
-            <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-            <button class="btn-sec" onclick="window.loginGoogle()">Google</button>
-            <button class="btn-sec" style="background:#000; color:#fff" onclick="window.loginApple()">Apple</button>
-            <button class="btn-sec" style="background:#25d366; color:#fff; border:none" onclick="window.loginTelefone()">Smartphone (SMS)</button>
+            <input type="password" id="auth-pass" placeholder="Senha">
+            <button class="btn-main" onclick="window.authEmail()">Entrar com E-mail</button>
+            
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            
+            <button class="btn-main btn-google" onclick="window.loginGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
+            </button>
+
+            <button class="btn-main btn-apple" style="margin-top:8px;" onclick="window.loginApple()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter: invert(1);"> Apple
+            </button>
+
+            <button class="btn-main btn-phone" style="margin-top:8px;" onclick="window.loginTelefone()">
+                📱 Smartphone (SMS)
+            </button>
         </div>
-        <button style="background:none; border:none; margin-top:15px; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao Mapa</button>
+        <button style="border:none; background:none; margin-top:20px; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao Mapa</button>
     </div>
 </div>
 
@@ -151,14 +165,22 @@
 
   window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
   window.loginApple = () => signInWithPopup(auth, new OAuthProvider('apple.com')).then(window.fecharLogin);
+  
   window.loginTelefone = async () => {
-      const tel = prompt("Número (+55...):");
+      const tel = prompt("Número com +55 e DDD:");
       if(!tel) return;
       const recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', {size: 'invisible'});
       const confirmation = await signInWithPhoneNumber(auth, tel, recaptcha);
       const code = prompt("Código SMS:");
       await confirmation.confirm(code);
       window.fecharLogin();
+  };
+
+  window.salvarCargoPretendido = async () => {
+      const cargo = document.getElementById('u-cargo-input').value;
+      if (auth.currentUser) {
+          await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { cargoPretendido: cargo });
+      }
   };
 
   window.trocarPerfil = async () => {
@@ -174,22 +196,23 @@
         document.getElementById('btn-entrar').style.display = 'none';
         document.getElementById('btn-sair').style.display = 'block';
         document.getElementById('user-info').classList.remove('hidden');
-        
         const d = await getDoc(doc(db, "usuarios", user.uid));
         userRole = d.exists() ? d.data().tipo : papelS;
-        if (!d.exists() && papelS) await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS });
+        if (!d.exists() && papelS) await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" });
 
         document.getElementById('u-name').innerText = user.displayName || user.email?.split('@')[0] || "Usuário";
         document.getElementById('u-photo').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         document.getElementById('u-badge-container').innerHTML = `<span class="badge" style="background:${userRole === 'empresa' ? '#057642' : '#0a66c2'}">${userRole}</span>`;
         
-        // CORREÇÃO: Esconder/Mostrar painéis conforme o papel
         if (userRole === 'empresa') {
             document.getElementById('panel-empresa').classList.remove('hidden');
             document.getElementById('panel-candidato').classList.add('hidden');
+            document.getElementById('area-cargo-candidato').classList.add('hidden');
         } else {
             document.getElementById('panel-empresa').classList.add('hidden');
             document.getElementById('panel-candidato').classList.remove('hidden');
+            document.getElementById('area-cargo-candidato').classList.remove('hidden');
+            if(d.exists()) document.getElementById('u-cargo-input').value = d.data().cargoPretendido || "";
         }
     }
     initMap();
@@ -199,24 +222,14 @@
     if (map) return;
     map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 14, disableDefaultUI: true });
     circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0, clickable: false });
-    
     map.addListener('click', async (e) => {
         if (userRole !== 'empresa') return;
         const emp = document.getElementById('v-emp').value;
         const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha o nome da Empresa e o Cargo antes de clicar no mapa!");
-        
-        await addDoc(collection(db, "vagas"), { 
-            emp, cargo: car, 
-            wa: document.getElementById('v-wa').value, 
-            mail: document.getElementById('v-email').value, 
-            lat: e.latLng.lat(), lng: e.latLng.lng(),
-            data: Date.now()
-        });
-        alert("Sucesso! Vaga publicada no local escolhido.");
-        document.getElementById('v-cargo').value = "";
+        if (!emp || !car) return alert("Preencha Empresa e Cargo!");
+        await addDoc(collection(db, "vagas"), { emp, cargo: car, wa: document.getElementById('v-wa').value, mail: document.getElementById('v-email').value, lat: e.latLng.lat(), lng: e.latLng.lng() });
+        alert("Vaga publicada!");
     });
-
     onSnapshot(collection(db, "vagas"), (snap) => {
         allVagas = []; snap.forEach(d => allVagas.push(d.data()));
         window.atualizar();
