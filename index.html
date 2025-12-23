@@ -1,193 +1,294 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alerta Vagas | Anunciar com Raio</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Alerta Vagas Próximas de Você</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
+
+  <style>
+    :root { --primary: #0a66c2; --bg: #f3f2ef; --border: #e0e0e0; --accent: #057642; --text-main: #1a1a1a; }
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #e5e3df; }
+
+    /* Header com Título Completo */
+    header { 
+        position: absolute; top: 10px; left: 10px; right: 10px;
+        background: white; padding: 12px 18px; 
+        display: flex; justify-content: space-between; align-items: center; 
+        z-index: 1000; height: 65px;
+        border-radius: 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .logo-title { color: var(--primary); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+    .pulse-icon { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); } }
+
+    /* Mapa Base */
+    #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+    /* ABA ESTILO GOOGLE MAPS (Bottom Sheet) */
+    #sidebar { 
+        position: absolute; left: 0; right: 0; bottom: 0;
+        width: 100%; background: white; 
+        border-radius: 24px 24px 0 0;
+        display: flex; flex-direction: column;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        z-index: 1100; 
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        height: 75vh;
+        /* No mobile começa mostrando apenas o cabeçalho da aba */
+        transform: translateY(calc(75vh - 150px)); 
+    }
+    #sidebar.open { transform: translateY(0); }
+
+    /* Alça para puxar a aba */
+    .drag-handle-container { padding: 12px; cursor: pointer; text-align: center; }
+    .drag-handle { width: 45px; height: 5px; background: #e0e0e0; border-radius: 10px; display: inline-block; }
+
+    .sidebar-content { padding: 0 20px 20px 20px; overflow-y: auto; flex: 1; }
     
-    <style>
-        /* Mantendo o Estilo Original do App */
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-        }
+    /* Letras Maiores e Cards */
+    h3, h4 { font-size: 1.3rem; margin-bottom: 15px; color: var(--text-main); }
+    label { font-size: 1.1rem; font-weight: 600; display: block; margin-bottom: 10px; }
+    
+    .profile-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 15px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .job-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+    .job-company { font-size: 1rem; color: #555; font-weight: 600; }
 
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; }
-        header { background: #fff; padding: 20px; text-align: center; border-bottom: 1px solid #ddd; }
-        
-        .main-container { max-width: 1100px; margin: 20px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px; }
-        
-        /* Layout em Duas Colunas */
-        .content-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 30px; font-weight: 700; width: 100%; cursor: pointer; font-size: 1rem; }
+    .btn-sec { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.95rem; }
 
-        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
-        #map { height: 400px; border-radius: 8px; z-index: 1; cursor: pointer; }
+    /* Login Social Restaurado */
+    .social-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
+    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 1rem; }
+    .btn-apple { background: black; color: white; border: none; }
+    .btn-phone { background: #25d366; color: white; border: none; }
 
-        /* Estilo dos Inputs */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        
-        /* Estilo do Slider de Raio */
-        .slider-container { background: #e9ecef; padding: 15px; border-radius: 6px; margin: 10px 0; }
-        .slider-label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
-        input[type=range] { width: 100%; cursor: pointer; }
+    .hidden { display: none !important; }
 
-        .btn-anunciar { 
-            background: var(--primary-color); color: white; border: none; padding: 12px 20px; 
-            border-radius: 4px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; 
-        }
-        .btn-anunciar:hover { background: #0056b3; }
+    #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-box { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; }
 
-        .instrucao { font-size: 12px; color: #666; font-style: italic; }
-
-        @media (max-width: 768px) {
-            .content-layout { grid-template-columns: 1fr; }
-        }
-    </style>
+    input[type="text"], input[type="email"], input[type="password"] { 
+        width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 1rem;
+    }
+  </style>
 </head>
 <body>
 
 <header>
-    <h1>Alerta Vagas</h1>
-    <p>Encontre ou anuncie vagas próximas a você</p>
+    <div class="logo-title"><div class="pulse-icon"></div> Alerta Vagas Próximas de Você</div>
+    <button id="btn-entrar" class="btn-main" style="padding: 10px 20px; width: auto;" onclick="window.mostrarLogin()">Entrar</button>
+    <button id="btn-sair" class="btn-sec" style="display:none; width: auto;" onclick="window.logout()">Sair</button>
 </header>
 
-<div class="main-container">
-    <div class="content-layout">
-        
-        <div class="card">
-            <h3>Anunciar Vaga</h3>
-            <div class="form-group">
-                <label>Cargo / Título</label>
-                <input type="text" id="vaga-titulo" placeholder="Ex: Porteiro, Vendedor...">
-            </div>
+<div id="map"></div>
 
-            <div class="form-group">
-                <label>Empresa</label>
-                <input type="text" id="vaga-empresa" placeholder="Nome da empresa">
+<div id="sidebar">
+    <div class="drag-handle-container" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <div class="drag-handle"></div>
+    </div>
+    
+    <div class="sidebar-content">
+        <div id="user-info" class="hidden">
+            <h3 id="u-name">Olá!</h3>
+            <div id="u-badge-container"></div>
+            
+            <div id="area-cargo-candidato" class="hidden">
+                <label>O que você procura hoje?</label>
+                <input type="text" id="u-cargo-input" placeholder="Ex: Motorista, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
-
-            <div class="slider-container">
-                <div class="slider-label">
-                    <span>Raio de Alcance</span>
-                    <span id="raio-display">5 km</span>
-                </div>
-                <input type="range" id="vaga-raio" min="1" max="50" value="5" oninput="atualizarRaio(this.value)">
-            </div>
-
-            <div class="form-group">
-                <label>Coordenadas Selecionadas</label>
-                <input type="text" id="vaga-coords" readonly placeholder="Toque no mapa para marcar">
-                <p class="instrucao">⚠️ Importante: Preencha os dados e toque no local exato da vaga no mapa ao lado.</p>
-            </div>
-
-            <button class="btn-anunciar" onclick="publicarVaga()">Publicar Vaga</button>
+            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
+            <hr style="margin: 20px 0; opacity: 0.3;">
         </div>
 
-        <div class="card">
-            <h3>Localização no Mapa</h3>
-            <div id="map"></div>
+        <div id="panel-candidato">
+            <label>Distância de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
+            <input type="range" id="range-km" min="1" max="50" value="5" oninput="window.atualizar()">
         </div>
 
+        <div id="panel-empresa" class="hidden">
+            <div class="profile-card" style="border-left: 5px solid var(--accent);">
+                <h4>Anunciar Vaga</h4>
+                <input type="text" id="v-emp" placeholder="Nome da Empresa">
+                <input type="text" id="v-cargo" placeholder="Cargo Ocupacional">
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.9rem;">📍 Após preencher, toque no local exato da vaga no mapa acima.</p>
+            </div>
+        </div>
+
+        <div id="jobs-list">
+            <p style="text-align:center; color:#777; margin-top: 20px;">Carregando vagas ao seu redor...</p>
+        </div>
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-    // 1. Inicialização do Mapa (Foco inicial no Brasil)
-    const map = L.map('map').setView([-23.5505, -46.6333], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    let marcador;
-    let circulo;
-
-    // 2. Função para atualizar o raio em tempo real
-    function atualizarRaio(valor) {
-        document.getElementById('raio-display').innerText = valor + " km";
-        if (marcador) {
-            desenharArea(marcador.getLatLng(), valor);
-        }
-    }
-
-    // 3. Função para desenhar o círculo (raio)
-    function desenharArea(latlng, raioKm) {
-        if (circulo) map.removeLayer(circulo);
+<div id="login-modal">
+    <div class="modal-box">
+        <h3>Acessar Alerta Vagas</h3>
+        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil para continuar:</p>
         
-        circulo = L.circle(latlng, {
-            color: '#007bff',
-            fillColor: '#007bff',
-            fillOpacity: 0.2,
-            radius: raioKm * 1000 // Converte para metros
-        }).addTo(map);
-    }
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
+            <button id="sel-e" class="btn-sec" style="flex:1" onclick="window.prepararPapel('empresa')">Empresa</button>
+        </div>
 
-    // 4. CORREÇÃO DO CLIQUE: Captura exata da vaga
-    map.on('click', function(e) {
-        const coords = e.latlng;
-        const raioAtual = document.getElementById('vaga-raio').value;
+        <div id="auth-fields" style="opacity:0.2; pointer-events:none;">
+            <input type="email" id="auth-email" placeholder="Seu e-mail">
+            <input type="password" id="auth-pass" placeholder="Sua senha">
+            <button class="btn-main" onclick="window.authEmail()">Entrar ou Criar Conta</button>
+            
+            <div class="social-btns">
+                <button class="btn-social" onclick="window.loginGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Continuar com Google
+                </button>
+                <button class="btn-social btn-apple" onclick="window.loginApple()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="18" style="filter:invert(1)"> Apple ID
+                </button>
+                <button class="btn-social btn-phone" onclick="window.loginTelefone()">
+                    📱 Entrar com Telefone
+                </button>
+            </div>
+        </div>
+        <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao mapa</button>
+    </div>
+</div>
 
-        // Atualiza campo de texto das coordenadas
-        document.getElementById('vaga-coords').value = `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Move ou cria o marcador visual
-        if (marcador) {
-            marcador.setLatLng(coords);
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
+    authDomain: "alertavaga-56b46.firebaseapp.com",
+    projectId: "alertavaga-56b46",
+    storageBucket: "alertavaga-56b46.firebasestorage.app",
+    messagingSenderId: "1006667244458",
+    appId: "1:1006667244458:web:4c2f35f5520843452c01d3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  let map, circle, allVagas = [], markers = [], papelS = null, userRole = 'visitante';
+  let userPos = { lat: -19.919, lng: -43.938 };
+
+  window.mostrarLogin = () => document.getElementById('login-modal').style.display='flex';
+  window.fecharLogin = () => document.getElementById('login-modal').style.display='none';
+  
+  window.prepararPapel = (p) => {
+      papelS = p;
+      document.getElementById('auth-fields').style.opacity = '1';
+      document.getElementById('auth-fields').style.pointerEvents = 'auto';
+      document.getElementById('sel-c').style.background = p === 'candidato' ? '#0a66c2' : 'white';
+      document.getElementById('sel-c').style.color = p === 'candidato' ? 'white' : '#0a66c2';
+      document.getElementById('sel-e').style.background = p === 'empresa' ? '#0a66c2' : 'white';
+      document.getElementById('sel-e').style.color = p === 'empresa' ? 'white' : '#0a66c2';
+  };
+
+  window.authEmail = async () => {
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-pass').value;
+      try { await signInWithEmailAndPassword(auth, email, pass); }
+      catch { await createUserWithEmailAndPassword(auth, email, pass); }
+      window.fecharLogin();
+  };
+
+  window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
+  window.loginApple = () => signInWithPopup(auth, new OAuthProvider('apple.com')).then(window.fecharLogin);
+  window.logout = () => signOut(auth).then(() => location.reload());
+
+  window.salvarCargoPretendido = async () => {
+      const cargo = document.getElementById('u-cargo-input').value;
+      if (auth.currentUser) await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { cargoPretendido: cargo });
+  };
+
+  window.trocarPerfil = async () => {
+      const nova = userRole === 'empresa' ? 'candidato' : 'empresa';
+      await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { tipo: nova });
+      location.reload();
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        document.getElementById('btn-entrar').style.display = 'none';
+        document.getElementById('btn-sair').style.display = 'block';
+        document.getElementById('user-info').classList.remove('hidden');
+        
+        const d = await getDoc(doc(db, "usuarios", user.uid));
+        userRole = d.exists() ? d.data().tipo : papelS;
+        
+        if (!d.exists() && papelS) await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" });
+
+        document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
+        
+        if (userRole === 'empresa') {
+            document.getElementById('panel-empresa').classList.remove('hidden');
+            document.getElementById('area-cargo-candidato').classList.add('hidden');
         } else {
-            marcador = L.marker(coords).addTo(map);
+            document.getElementById('area-cargo-candidato').classList.remove('hidden');
+            if(d.exists()) document.getElementById('u-cargo-input').value = d.data().cargoPretendido || "";
         }
+    }
+    initMap();
+  });
 
-        // Desenha o círculo de alcance
-        desenharArea(coords, raioAtual);
-        
-        // Ajusta a visão para o ponto clicado
-        map.panTo(coords);
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), { 
+        center: userPos, zoom: 16, disableDefaultUI: true,
+        styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
     });
 
-    // 5. Função de Publicação
-    function publicarVaga() {
-        const titulo = document.getElementById('vaga-titulo').value;
-        const empresa = document.getElementById('vaga-empresa').value;
-        const local = document.getElementById('vaga-coords').value;
-        const raio = document.getElementById('vaga-raio').value;
+    circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 });
 
-        if (!titulo || !local) {
-            alert("Erro: Você precisa dar um título e marcar o local no mapa!");
-            return;
-        }
-
-        const payload = {
-            titulo,
-            empresa,
-            latitude: local.split(',')[0],
-            longitude: local.split(',')[1],
-            raio_alcance: raio + "km"
-        };
-
-        console.log("Enviando vaga:", payload);
-        alert("Sucesso! Vaga anunciada dentro do raio de " + raio + "km.");
-        
-        // Limpar formulário após sucesso
-        limparFormulario();
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(p => {
+            userPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+            map.setCenter(userPos); circle.setCenter(userPos); window.atualizar();
+        });
     }
 
-    function limparFormulario() {
-        document.getElementById('vaga-titulo').value = "";
-        document.getElementById('vaga-empresa').value = "";
-        document.getElementById('vaga-coords').value = "";
-        if (marcador) map.removeLayer(marcador);
-        if (circulo) map.removeLayer(circulo);
-    }
+    map.addListener('click', async (e) => {
+        if (userRole !== 'empresa') return;
+        const emp = document.getElementById('v-emp').value;
+        const car = document.getElementById('v-cargo').value;
+        if (!emp || !car) return alert("Preencha os dados da vaga primeiro!");
+        await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
+        alert("Vaga salva no local selecionado!");
+    });
+
+    onSnapshot(collection(db, "vagas"), (snap) => {
+        allVagas = []; snap.forEach(d => allVagas.push(d.data()));
+        window.atualizar();
+    });
+  }
+
+  window.atualizar = () => {
+    const km = document.getElementById('range-km').value;
+    document.getElementById('km-val').innerText = km;
+    if(circle) circle.setRadius(km * 1000);
+    const filtradas = allVagas.filter(v => google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(userPos.lat, userPos.lng), new google.maps.LatLng(v.lat, v.lng)) <= (km * 1000));
+    renderVagas(filtradas);
+  };
+
+  function renderVagas(vagas) {
+    const list = document.getElementById('jobs-list');
+    list.innerHTML = vagas.length ? "" : "<p style='text-align:center; padding: 20px;'>Nenhuma vaga encontrada neste raio.</p>";
+    markers.forEach(m => m.setMap(null));
+    vagas.forEach(v => {
+        const card = document.createElement('div');
+        card.className = "profile-card";
+        card.innerHTML = `<div class="job-title">${v.cargo}</div><div class="job-company">${v.emp}</div>`;
+        list.appendChild(card);
+        markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
+    });
+  }
 </script>
-
 </body>
 </html>
