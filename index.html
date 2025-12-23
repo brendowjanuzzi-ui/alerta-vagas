@@ -3,137 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alerta Vagas - Anunciar com Raio</title>
+    <title>Alerta Vagas | Anunciar com Raio</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
+        /* Mantendo o Estilo Original do App */
         :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; }
+        header { background: #fff; padding: 20px; text-align: center; border-bottom: 1px solid #ddd; }
         
-        #map { height: 450px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: crosshair; }
+        .main-container { max-width: 1100px; margin: 20px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px; }
         
-        .form-side { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        /* Layout em Duas Colunas */
+        .content-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
-        h2 { margin-top: 0; color: #1e293b; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #475569; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        #map { height: 400px; border-radius: 8px; z-index: 1; cursor: pointer; }
+
+        /* Estilo dos Inputs */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
-        .radius-info { background: #e0f2fe; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.9em; }
-        
-        button { 
-            width: 100%; background: var(--primary); color: white; border: none; 
-            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        /* Estilo do Slider de Raio */
+        .slider-container { background: #e9ecef; padding: 15px; border-radius: 6px; margin: 10px 0; }
+        .slider-label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
+        input[type=range] { width: 100%; cursor: pointer; }
+
+        .btn-anunciar { 
+            background: var(--primary-color); color: white; border: none; padding: 12px 20px; 
+            border-radius: 4px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; 
         }
-        button:hover { background: #1d4ed8; }
+        .btn-anunciar:hover { background: #0056b3; }
+
+        .instrucao { font-size: 12px; color: #666; font-style: italic; }
 
         @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
-            #map { height: 300px; }
+            .content-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="form-side">
-        <h2>Anunciar Nova Vaga</h2>
-        <div class="input-group">
-            <label>Título da Vaga</label>
-            <input type="text" id="titulo" placeholder="Ex: Desenvolvedor Front-end">
-        </div>
+<header>
+    <h1>Alerta Vagas</h1>
+    <p>Encontre ou anuncie vagas próximas a você</p>
+</header>
 
-        <div class="input-group">
-            <label>Ajustar Raio de Alcance (Km)</label>
-            <input type="range" id="raioRange" min="1" max="50" value="5" oninput="updateRadius(this.value)">
-            <div class="radius-info">Raio atual: <span id="radiusVal">5</span> km</div>
-        </div>
-
-        <div class="input-group">
-            <label>Coordenadas (clique no mapa)</label>
-            <input type="text" id="coords" readonly placeholder="Latitude, Longitude">
-        </div>
-
-        <p style="font-size: 0.8em; color: #64748b;">* Após preencher, toque no local exato da vaga no mapa ao lado.</p>
+<div class="main-container">
+    <div class="content-layout">
         
-        <button onclick="salvarVaga()">Publicar Vaga</button>
-    </div>
+        <div class="card">
+            <h3>Anunciar Vaga</h3>
+            <div class="form-group">
+                <label>Cargo / Título</label>
+                <input type="text" id="vaga-titulo" placeholder="Ex: Porteiro, Vendedor...">
+            </div>
 
-    <div id="map"></div>
+            <div class="form-group">
+                <label>Empresa</label>
+                <input type="text" id="vaga-empresa" placeholder="Nome da empresa">
+            </div>
+
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Raio de Alcance</span>
+                    <span id="raio-display">5 km</span>
+                </div>
+                <input type="range" id="vaga-raio" min="1" max="50" value="5" oninput="atualizarRaio(this.value)">
+            </div>
+
+            <div class="form-group">
+                <label>Coordenadas Selecionadas</label>
+                <input type="text" id="vaga-coords" readonly placeholder="Toque no mapa para marcar">
+                <p class="instrucao">⚠️ Importante: Preencha os dados e toque no local exato da vaga no mapa ao lado.</p>
+            </div>
+
+            <button class="btn-anunciar" onclick="publicarVaga()">Publicar Vaga</button>
+        </div>
+
+        <div class="card">
+            <h3>Localização no Mapa</h3>
+            <div id="map"></div>
+        </div>
+
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-    // Inicializa o mapa (centralizado no Brasil por padrão)
-    const map = L.map('map').setView([-23.5505, -46.6333], 12);
+    // 1. Inicialização do Mapa (Foco inicial no Brasil)
+    const map = L.map('map').setView([-23.5505, -46.6333], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
+        attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    let marker;
-    let circle;
+    let marcador;
+    let circulo;
 
-    // Função para atualizar o raio visualmente
-    function updateRadius(val) {
-        document.getElementById('radiusVal').innerText = val;
-        if (marker) {
-            drawCircle(marker.getLatLng(), val * 1000);
+    // 2. Função para atualizar o raio em tempo real
+    function atualizarRaio(valor) {
+        document.getElementById('raio-display').innerText = valor + " km";
+        if (marcador) {
+            desenharArea(marcador.getLatLng(), valor);
         }
     }
 
-    // Desenha o círculo de alcance
-    function drawCircle(latlng, radiusInMeters) {
-        if (circle) map.removeLayer(circle);
+    // 3. Função para desenhar o círculo (raio)
+    function desenharArea(latlng, raioKm) {
+        if (circulo) map.removeLayer(circulo);
         
-        circle = L.circle(latlng, {
-            color: '#2563eb',
-            fillColor: '#3b82f6',
+        circulo = L.circle(latlng, {
+            color: '#007bff',
+            fillColor: '#007bff',
             fillOpacity: 0.2,
-            radius: radiusInMeters
+            radius: raioKm * 1000 // Converte para metros
         }).addTo(map);
     }
 
-    // Evento de Clique no Mapa
+    // 4. CORREÇÃO DO CLIQUE: Captura exata da vaga
     map.on('click', function(e) {
-        const { lat, lng } = e.latlng;
-        const raioKm = document.getElementById('raioRange').value;
+        const coords = e.latlng;
+        const raioAtual = document.getElementById('vaga-raio').value;
 
-        // Atualiza Input de coordenadas
-        document.getElementById('coords').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        // Atualiza campo de texto das coordenadas
+        document.getElementById('vaga-coords').value = `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
 
-        // Coloca ou Move o Marcador
-        if (marker) {
-            marker.setLatLng(e.latlng);
+        // Move ou cria o marcador visual
+        if (marcador) {
+            marcador.setLatLng(coords);
         } else {
-            marker = L.marker(e.latlng).addTo(map);
+            marcador = L.marker(coords).addTo(map);
         }
 
-        // Desenha o raio ao redor do marcador
-        drawCircle(e.latlng, raioKm * 1000);
+        // Desenha o círculo de alcance
+        desenharArea(coords, raioAtual);
         
-        // Centraliza levemente o mapa no ponto clicado
-        map.panTo(e.latlng);
+        // Ajusta a visão para o ponto clicado
+        map.panTo(coords);
     });
 
-    function salvarVaga() {
-        const titulo = document.getElementById('titulo').value;
-        const coords = document.getElementById('coords').value;
-        const raio = document.getElementById('raioRange').value;
+    // 5. Função de Publicação
+    function publicarVaga() {
+        const titulo = document.getElementById('vaga-titulo').value;
+        const empresa = document.getElementById('vaga-empresa').value;
+        const local = document.getElementById('vaga-coords').value;
+        const raio = document.getElementById('vaga-raio').value;
 
-        if (!titulo || !coords) {
-            alert("Por favor, preencha o título e selecione um local no mapa!");
+        if (!titulo || !local) {
+            alert("Erro: Você precisa dar um título e marcar o local no mapa!");
             return;
         }
 
-        alert(`Vaga "${titulo}" anunciada com sucesso!\nRaio de alcance: ${raio}km`);
-        console.log({ titulo, coords, raio });
+        const payload = {
+            titulo,
+            empresa,
+            latitude: local.split(',')[0],
+            longitude: local.split(',')[1],
+            raio_alcance: raio + "km"
+        };
+
+        console.log("Enviando vaga:", payload);
+        alert("Sucesso! Vaga anunciada dentro do raio de " + raio + "km.");
+        
+        // Limpar formulário após sucesso
+        limparFormulario();
+    }
+
+    function limparFormulario() {
+        document.getElementById('vaga-titulo').value = "";
+        document.getElementById('vaga-empresa').value = "";
+        document.getElementById('vaga-coords').value = "";
+        if (marcador) map.removeLayer(marcador);
+        if (circulo) map.removeLayer(circulo);
     }
 </script>
 
