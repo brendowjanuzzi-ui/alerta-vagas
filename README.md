@@ -1,4 +1,6 @@
-# 📍 Alerta-Vagas
+ #📍 Alerta-Vagas
+
+> 🌐 **Acesse o projeto aqui:** [https://brendowjanuzzi-ui.github.io/alerta-vagas/](https://brendowjanuzzi-ui.github.io/alerta-vagas/)
 
 Uma plataforma inteligente de busca de empregos baseada em geolocalização, conectando candidatos a oportunidades locais em tempo real.
 
