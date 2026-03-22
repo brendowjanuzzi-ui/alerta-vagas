@@ -7,7 +7,7 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Leaflet CSS & JS -->
+  <!-- Leaflet – mapa gratuito e moderno -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5n/N0ZDvEg=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
@@ -75,8 +75,9 @@
         width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 1rem;
     }
 
-    /* Melhora performance: reduz travadas em mobile */
+    /* Melhorias para performance e nitidez */
     .leaflet-container { image-rendering: crisp-edges; }
+    .leaflet-tile { image-rendering: crisp-edges; image-rendering: -moz-crisp-edges; }
   </style>
 </head>
 <body>
@@ -242,18 +243,17 @@
 
   function initMap() {
     map = L.map('map', {
-      zoomControl: true,  // ativa controles de zoom (mais intuitivo)
-      zoomDelta: 0.5,     // zoom mais suave
-      zoomSnap: 0.5
+      zoomControl: true,
+      zoomDelta: 0.5,
+      zoomSnap: 0.5,
+      detectRetina: true
     }).setView([userPos.lat, userPos.lng], 16);
 
-    // Tile moderno: Carto Voyager (rápido, bonito, retina support)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
+    // Tiles modernos e rápidos: Stadia Maps Alidade Smooth
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
         maxZoom: 20,
-        tileSize: 512,
-        zoomOffset: -1  // para retina/high-res
+        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+        subdomains: 'abcd'
     }).addTo(map);
 
     circle = L.circle([userPos.lat, userPos.lng], {
@@ -264,6 +264,11 @@
     }).addTo(map);
 
     markersLayer.addTo(map);
+
+    // Força recarregamento dos tiles (resolve mapa cinza/vazio)
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(p => {
