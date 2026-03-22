@@ -1,4 +1,3 @@
-// config.js - Copie e cole exatamente este conteúdo
 export const mapsKey = "AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0";
 
 export const firebaseConfig = {
