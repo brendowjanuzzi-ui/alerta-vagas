@@ -28,14 +28,10 @@
     #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
     #sidebar { 
-        position: absolute; left: 0; right: 0; bottom: 0;
-        width: 100%; background: white; 
-        border-radius: 24px 24px 0 0;
-        display: flex; flex-direction: column;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-        z-index: 1100; 
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-        height: 75vh;
+        position: absolute; left: 0; right: 0; bottom: 0; width: 100%; background: white; 
+        border-radius: 24px 24px 0 0; display: flex; flex-direction: column;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1100; 
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); height: 75vh;
         transform: translateY(calc(75vh - 150px)); 
     }
     #sidebar.open { transform: translateY(0); }
@@ -48,10 +44,15 @@
     .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 30px; font-weight: 700; width: 100%; cursor: pointer; font-size: 1rem; }
     .btn-sec { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.95rem; }
 
+    .social-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
+    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.9rem; }
+    .btn-apple { background: black; color: white; border: none; }
+    .btn-whatsapp { background: #25d366; color: white; border: none; }
+
     .hidden { display: none !important; }
 
     #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; }
+    .modal-box { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; max-height: 90vh; overflow-y: auto; }
 
     input[type="text"], input[type="email"], input[type="password"] { 
         width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 1rem;
@@ -77,13 +78,11 @@
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
-            
             <div id="area-candidato-profile" class="hidden">
                 <label>Cargo pretendido:</label>
                 <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
-
-            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Mudar para Empresa/Candidato</button>
+            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
             <hr style="margin: 20px 0; opacity: 0.2;">
         </div>
 
@@ -97,7 +96,7 @@
                 <h4>Anunciar Nova Vaga</h4>
                 <input type="text" id="v-emp" placeholder="Nome da sua Empresa">
                 <input type="text" id="v-cargo" placeholder="Título do Cargo">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Após preencher, toque no local da vaga no mapa.</p>
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Preencha e toque no local da vaga no mapa.</p>
             </div>
         </div>
 
@@ -110,17 +109,29 @@
 <div id="login-modal">
     <div class="modal-box">
         <h3>Acessar Alerta Vagas</h3>
-        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil:</p>
+        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil para continuar:</p>
         
         <div style="display:flex; gap:10px; margin-bottom:20px;">
             <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
             <button id="sel-e" class="btn-sec" style="flex:1" onclick="window.prepararPapel('empresa')">Empresa</button>
         </div>
 
-        <div id="auth-fields" style="opacity:0.3; pointer-events:none; transition: all 0.3s ease;">
+        <div id="auth-fields" style="opacity:0.2; pointer-events:none; transition: all 0.3s ease;">
             <input type="email" id="auth-email" placeholder="E-mail">
             <input type="password" id="auth-pass" placeholder="Senha">
             <button class="btn-main" onclick="window.authEmail()">Entrar ou Criar Conta</button>
+            
+            <div class="social-btns">
+                <button class="btn-social" onclick="window.loginGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Continuar com Google
+                </button>
+                <button class="btn-social btn-apple" onclick="alert('Integração Apple ID em breve')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter: invert(1);"> Apple ID
+                </button>
+                <button class="btn-social btn-whatsapp" onclick="alert('Login via WhatsApp em breve')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18"> Entrar com WhatsApp
+                </button>
+            </div>
         </div>
         <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao mapa</button>
     </div>
@@ -129,7 +140,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
@@ -143,6 +154,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
   let map, circle, allVagas = [], markers = [], papelS = null, userRole = 'visitante';
   let userPos = { lat: -19.919, lng: -43.938 };
@@ -164,20 +176,20 @@
   window.authEmail = async () => {
       const email = document.getElementById('auth-email').value;
       const pass = document.getElementById('auth-pass').value;
-      if(!email || !pass) return alert("Preencha tudo!");
+      if(!email || !pass) return alert("Preencha e-mail e senha!");
       try { await signInWithEmailAndPassword(auth, email, pass); }
       catch { await createUserWithEmailAndPassword(auth, email, pass); }
       window.fecharLogin();
   };
 
+  window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
   window.logout = () => signOut(auth).then(() => location.reload());
 
-  // FUNÇÃO CORRIGIDA PARA TROCAR PERFIL
   window.trocarPerfil = async () => {
       const user = auth.currentUser;
       if(!user) return;
       const novoTipo = userRole === 'candidato' ? 'empresa' : 'candidato';
-      if(confirm(`Mudar perfil para ${novoTipo.toUpperCase()}?`)) {
+      if(confirm(`Deseja mudar seu perfil para ${novoTipo.toUpperCase()}?`)) {
           await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
           location.reload();
       }
@@ -190,7 +202,6 @@
         document.getElementById('user-info').classList.remove('hidden');
         
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        
         if (userDoc.exists()) {
             userRole = userDoc.data().tipo;
         } else if (papelS) {
@@ -198,15 +209,15 @@
             await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" });
         }
 
-        document.getElementById('u-name').innerText = `Olá, ${user.email.split('@')[0]}!`;
+        document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
         
-        // LÓGICA DE EXIBIÇÃO POR PERFIL
         if (userRole === 'empresa') {
             document.getElementById('panel-empresa').classList.remove('hidden');
             document.getElementById('area-candidato-profile').classList.add('hidden');
         } else {
             document.getElementById('panel-empresa').classList.add('hidden');
             document.getElementById('area-candidato-profile').classList.remove('hidden');
+            if(userDoc.exists()) document.getElementById('u-cargo-input').value = userDoc.data().cargoPretendido || "";
         }
     }
     initMap();
@@ -229,9 +240,9 @@
         if (userRole !== 'empresa') return;
         const emp = document.getElementById('v-emp').value;
         const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha o nome da empresa e o cargo!");
+        if (!emp || !car) return alert("Preencha os dados da empresa e cargo antes de marcar no mapa!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga postada!");
+        alert("Vaga cadastrada no local!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
@@ -254,7 +265,7 @@
     });
 
     const list = document.getElementById('jobs-list');
-    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center;'>Nenhuma vaga encontrada.</p>";
+    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga no raio selecionado.</p>";
     markers.forEach(m => m.setMap(null));
     markers = [];
     filtradas.forEach(v => {
@@ -264,6 +275,12 @@
         list.appendChild(card);
         markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
+  };
+
+  window.salvarCargoPretendido = async () => {
+      const user = auth.currentUser;
+      const cargo = document.getElementById('u-cargo-input').value;
+      if(user) await updateDoc(doc(db, "usuarios", user.uid), { cargoPretendido: cargo });
   };
 </script>
 </body>
