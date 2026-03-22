@@ -3,13 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alerta Vaga GPS</title>
+    <title>Alerta Vaga GPS | Filtro Dinâmico</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* CSS Integrado */
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Painel do Slider flutuante */
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 280px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .controls label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        #distancia-valor {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        /* Estilo do Slider */
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Botão para simular localização (Opcional) */
+        .btn-gps {
+            position: absolute;
+            bottom: 30px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
@@ -21,11 +95,64 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="script.js"></script>
-    
+
     <script>
+        /* JavaScript Integrado */
+        
+        // 1. Iniciar o mapa (Focado em BH conforme sua localização)
+        const coordsBH = [-19.9167, -43.9345];
+        const map = L.map('map').setView(coordsBH, 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 2. Variáveis de controle
+        let raioCirculo;
+        const slider = document.getElementById('range-raio');
+        const displayValor = document.getElementById('distancia-valor');
+
+        // 3. Função para desenhar/atualizar o círculo
+        function atualizarMapa(km) {
+            const metros = km * 1000;
+
+            if (raioCirculo) {
+                raioCirculo.setRadius(metros);
+            } else {
+                raioCirculo = L.circle(coordsBH, {
+                    color: '#4f46e5',
+                    fillColor: '#4f46e5',
+                    fillOpacity: 0.15,
+                    weight: 2,
+                    radius: metros
+                }).addTo(map);
+            }
+
+            // Ajusta o zoom do mapa para caber o círculo na tela
+            map.fitBounds(raioCirculo.getBounds(), { padding: [30, 30] });
+        }
+
+        // 4. Evento do Slider
+        slider.addEventListener('input', (e) => {
+            const valor = e.target.value;
+            displayValor.innerText = valor;
+            atualizarMapa(valor);
+        });
+
+        // 5. Simulação de uma Vaga no Mapa
+        const markerVaga = L.marker([-19.9250, -43.9400]).addTo(map)
+            .bindPopup('<b>Vaga de Desenvolvedor</b><br>Disponível no seu raio!');
+
+        // Inicializar com 5km
+        atualizarMapa(5);
+
+        // 6. Registro do Service Worker (PWA)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registrado!', reg))
+                    .catch(err => console.log('Erro no SW', err));
+            });
         }
     </script>
 </body>
