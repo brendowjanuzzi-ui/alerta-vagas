@@ -74,25 +74,27 @@
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
+            
             <div id="area-candidato-profile" class="hidden">
-                <label>Cargo pretendido:</label>
+                <label>O que você busca hoje?</label>
                 <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
+
             <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Alternar tipo de conta</button>
             <hr style="margin: 20px 0; opacity: 0.15;">
         </div>
 
         <div id="panel-distancia">
-            <label>Raio de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
+            <label>Distância de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
             <input type="range" id="range-km" min="1" max="50" value="5" step="1">
         </div>
 
         <div id="panel-empresa" class="hidden" style="margin-top: 20px;">
             <div class="profile-card" style="border-left: 5px solid var(--accent);">
-                <h4>Anunciar Vaga</h4>
-                <input type="text" id="v-emp" placeholder="Nome da Empresa">
-                <input type="text" id="v-cargo" placeholder="Título da Vaga">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no mapa para marcar o local.</p>
+                <h4>Anunciar Nova Vaga</h4>
+                <input type="text" id="v-emp" placeholder="Nome da sua Empresa">
+                <input type="text" id="v-cargo" placeholder="Título do Cargo">
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no local da vaga no mapa acima.</p>
             </div>
         </div>
 
@@ -136,7 +138,6 @@
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  // Carrega o Google Maps dinamicamente usando a chave do config.js
   const mapScript = document.createElement('script');
   mapScript.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=geometry`;
   mapScript.onload = () => { if(auth.currentUser || !userRole) initMap(); };
@@ -179,7 +180,7 @@
   window.trocarPerfil = async () => {
       const user = auth.currentUser;
       if(!user) return;
-      const novoTipo = userRole === 'candidato' ? 'empresa' : 'candidato';
+      const novoTipo = (userRole === 'candidato') ? 'empresa' : 'candidato';
       if(confirm(`Mudar perfil para ${novoTipo.toUpperCase()}?`)) {
           await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
           location.reload();
@@ -187,15 +188,17 @@
   };
 
   onAuthStateChanged(auth, async (user) => {
+    // RESET TOTAL: Garante que nada apareça por acidente antes da verificação
+    document.getElementById('panel-empresa').classList.add('hidden');
+    document.getElementById('area-candidato-profile').classList.add('hidden');
+    document.getElementById('user-info').classList.add('hidden');
+
     if (user) {
         document.getElementById('btn-entrar').style.display = 'none';
         document.getElementById('btn-sair').style.display = 'block';
-        document.getElementById('user-info').classList.remove('hidden');
         
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        document.getElementById('panel-empresa').classList.add('hidden');
-        document.getElementById('area-candidato-profile').classList.add('hidden');
-
+        
         if (userDoc.exists()) {
             userRole = userDoc.data().tipo;
         } else if (papelS) {
@@ -204,7 +207,9 @@
         }
 
         document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
-        
+        document.getElementById('user-info').classList.remove('hidden');
+
+        // VERIFICAÇÃO RIGOROSA
         if (userRole === 'empresa') {
             document.getElementById('panel-empresa').classList.remove('hidden');
         } else {
@@ -235,7 +240,7 @@
         const car = document.getElementById('v-cargo').value;
         if (!emp || !car) return alert("Preencha nome da empresa e cargo antes de marcar no mapa!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga cadastrada!");
+        alert("Vaga cadastrada com sucesso!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
