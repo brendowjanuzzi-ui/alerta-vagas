@@ -3,265 +3,188 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Alerta Vagas - Brendow Dev</title>
-  
+  <title>Alerta Vagas</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
   <style>
-    :root { --primary: #0a66c2; --bg: #f3f2ef; --border: #e0e0e0; --accent: #057642; --text-main: #1a1a1a; }
+    :root { --primary: #0a66c2; --bg: #f3f2ef; --border: #e0e0e0; --accent: #057642; }
     * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
     html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #e5e3df; }
-
-    header { 
-        position: absolute; top: 10px; left: 10px; right: 10px;
-        background: white; padding: 12px 18px; 
-        display: flex; justify-content: space-between; align-items: center; 
-        z-index: 1000; height: 65px; border-radius: 30px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .logo-title { color: var(--primary); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-    .pulse-icon { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); } }
-
+    header { position: absolute; top: 10px; left: 10px; right: 10px; background: white; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; height: 65px; border-radius: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-
-    #sidebar { 
-        position: absolute; left: 0; right: 0; bottom: 0; width: 100%; background: white; 
-        border-radius: 24px 24px 0 0; display: flex; flex-direction: column;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1100; 
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); height: 75vh;
-        transform: translateY(calc(75vh - 150px)); 
-    }
+    #sidebar { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1100; transition: transform 0.4s ease; height: 75vh; transform: translateY(calc(75vh - 150px)); }
     #sidebar.open { transform: translateY(0); }
-
-    .drag-handle-container { padding: 12px; cursor: pointer; text-align: center; }
-    .drag-handle { width: 45px; height: 5px; background: #e0e0e0; border-radius: 10px; display: inline-block; }
-    .sidebar-content { padding: 0 20px 20px 20px; overflow-y: auto; flex: 1; }
-    
-    .profile-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 15px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
-    .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 30px; font-weight: 700; width: 100%; cursor: pointer; font-size: 1rem; }
-    .btn-sec { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.95rem; }
-
-    .btn-whatsapp-vaga { 
-        background: #25d366; color: white; border: none; padding: 8px 15px; 
-        border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; 
-        align-items: center; gap: 8px; margin-top: 10px; font-size: 0.85rem; text-decoration: none; width: fit-content;
-    }
-
+    .sidebar-content { padding: 20px; overflow-y: auto; flex: 1; }
+    .profile-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 15px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 30px; font-weight: 700; width: 100%; cursor: pointer; }
+    .btn-wpp { background: #25d366; color: white; text-decoration: none; padding: 10px 15px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 600; font-size: 0.9rem; }
     .hidden { display: none !important; }
-
     #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; }
-
-    input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; }
+    input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
 <header>
-    <div class="logo-title"><div class="pulse-icon"></div> Alerta Vagas</div>
-    <button id="btn-entrar" class="btn-main" style="padding: 10px 20px; width: auto;" onclick="window.mostrarLogin()">Entrar</button>
-    <button id="btn-sair" class="btn-sec" style="display:none; width: auto;" onclick="window.logout()">Sair</button>
+    <div style="color:var(--primary); font-weight:800;">Alerta Vagas</div>
+    <button id="btn-entrar" class="btn-main" style="width:auto; padding: 8px 20px;" onclick="window.mostrarLogin()">Entrar</button>
+    <button id="btn-sair" class="btn-main" style="width:auto; padding: 8px 20px; background:#666; display:none;" onclick="window.logout()">Sair</button>
 </header>
 
 <div id="map"></div>
 
 <div id="sidebar">
-    <div class="drag-handle-container" onclick="document.getElementById('sidebar').classList.toggle('open')">
-        <div class="drag-handle"></div>
+    <div style="padding:15px; text-align:center; cursor:pointer" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <div style="width:40px; height:5px; background:#ddd; border-radius:10px; display:inline-block"></div>
     </div>
-    
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
-            <div id="area-candidato-profile" class="hidden">
-                <label>Cargo de interesse:</label>
-                <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor Front-end" onblur="window.salvarCargoPretendido()">
+            <div id="area-candidato" class="hidden">
+                <input type="text" id="u-cargo" placeholder="Seu cargo de interesse" onblur="window.salvarCargo()">
             </div>
-            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
-            <hr style="margin: 20px 0; opacity: 0.15;">
+            <button onclick="window.trocarPerfil()" style="background:none; border:none; color:var(--primary); cursor:pointer; text-decoration:underline">Alternar tipo de conta</button>
+            <hr style="opacity:0.1; margin:15px 0;">
         </div>
 
         <div id="panel-distancia">
-            <label>Raio de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
-            <input type="range" id="range-km" min="1" max="50" value="5" step="1">
+            <label>Distância: <span id="km-val">5</span> km</label>
+            <input type="range" id="range-km" min="1" max="50" value="5" style="width:100%">
         </div>
 
-        <div id="panel-empresa" class="hidden" style="margin-top: 20px;">
-            <div class="profile-card" style="border-left: 5px solid var(--accent);">
-                <h4>Anunciar Vaga</h4>
-                <input type="text" id="v-emp" placeholder="Nome da Empresa">
+        <div id="panel-empresa" class="hidden">
+            <div class="profile-card" style="border-left:5px solid var(--accent)">
+                <h4>Postar Vaga</h4>
+                <input type="text" id="v-emp" placeholder="Empresa">
                 <input type="text" id="v-cargo" placeholder="Cargo">
-                <input type="text" id="v-wpp" placeholder="WhatsApp (DDD+Número)">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no mapa para marcar o local.</p>
+                <input type="text" id="v-wpp" placeholder="WhatsApp (DDD + Número)">
+                <p style="font-size:0.8rem; color:var(--accent)">📍 Clique no mapa para confirmar o local</p>
             </div>
         </div>
 
-        <div id="jobs-list">
-            <p style="text-align:center; color:#777; margin-top: 30px;">Buscando vagas...</p>
-        </div>
+        <div id="jobs-list"></div>
     </div>
 </div>
 
 <div id="login-modal">
     <div class="modal-box">
-        <h3>Entrar no Alerta Vagas</h3>
-        <p>Escolha seu perfil:</p>
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
-            <button id="sel-e" class="btn-sec" style="flex:1" onclick="window.prepararPapel('empresa')">Empresa</button>
+        <h3>Acessar Alerta Vagas</h3>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button id="sel-c" class="btn-main" style="background:#eee; color:#333" onclick="window.preparar('candidato')">Candidato</button>
+            <button id="sel-e" class="btn-main" style="background:#eee; color:#333" onclick="window.preparar('empresa')">Empresa</button>
         </div>
-        <div id="auth-fields" style="opacity:0.2; pointer-events:none;">
-            <input type="email" id="auth-email" placeholder="E-mail">
-            <input type="password" id="auth-pass" placeholder="Senha">
-            <button class="btn-main" onclick="window.authEmail()">Acessar</button>
-            <button class="btn-sec" style="margin-top:10px;" onclick="window.loginGoogle()">Entrar com Google</button>
+        <div id="auth-box" style="opacity:0.3; pointer-events:none">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Senha">
+            <button class="btn-main" onclick="window.logar()">Entrar / Cadastrar</button>
+            <button class="btn-main" style="margin-top:10px; background:#db4437" onclick="window.google()">Google</button>
         </div>
-        <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Cancelar</button>
+        <button onclick="window.fecharLogin()" style="margin-top:15px; background:none; border:none; color:#999">Voltar</button>
     </div>
 </div>
 
 <script type="module">
-  import { mapsKey, firebaseConfig } from './config.js';
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { mapsKey, firebaseConfig } from './config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let map, circle, markers = [], allVagas = [], userRole = 'visitante', papelS = null;
 
-  let map, circle, allVagas = [], markers = [], papelS = null, userRole = 'visitante';
-  let userPos = { lat: -19.919, lng: -43.938 };
+    // Carregar Google Maps
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=geometry`;
+    script.onload = () => initMap();
+    document.head.appendChild(script);
 
-  // 1. CARREGA O MAPA IMEDIATAMENTE
-  const mapScript = document.createElement('script');
-  mapScript.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=geometry`;
-  mapScript.onload = () => initMap();
-  document.head.appendChild(mapScript);
-
-  window.mostrarLogin = () => document.getElementById('login-modal').style.display='flex';
-  window.fecharLogin = () => document.getElementById('login-modal').style.display='none';
-  
-  window.prepararPapel = (p) => {
-      papelS = p;
-      document.getElementById('auth-fields').style.opacity = '1';
-      document.getElementById('auth-fields').style.pointerEvents = 'auto';
-  };
-
-  window.authEmail = async () => {
-      const email = document.getElementById('auth-email').value;
-      const pass = document.getElementById('auth-pass').value;
-      try { await signInWithEmailAndPassword(auth, email, pass); }
-      catch { await createUserWithEmailAndPassword(auth, email, pass); }
-      window.fecharLogin();
-  };
-
-  window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
-  window.logout = () => signOut(auth).then(() => location.reload());
-
-  // CORREÇÃO: Função de alternar tipo de conta
-  window.trocarPerfil = async () => {
-      const user = auth.currentUser;
-      if(!user) return;
-      const novoTipo = (userRole === 'candidato') ? 'empresa' : 'candidato';
-      if(confirm(`Deseja mudar seu perfil para ${novoTipo.toUpperCase()}?`)) {
-          await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
-          location.reload();
-      }
-  };
-
-  onAuthStateChanged(auth, async (user) => {
-    // Reset de segurança
-    document.getElementById('panel-empresa').classList.add('hidden');
-    document.getElementById('area-candidato-profile').classList.add('hidden');
-    document.getElementById('user-info').classList.add('hidden');
-
-    if (user) {
-        document.getElementById('btn-entrar').style.display = 'none';
-        document.getElementById('btn-sair').style.display = 'block';
+    onAuthStateChanged(auth, async (user) => {
+        const pEmpresa = document.getElementById('panel-empresa');
+        const pCandidato = document.getElementById('area-candidato');
+        const uInfo = document.getElementById('user-info');
         
-        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        if (userDoc.exists()) { 
-            userRole = userDoc.data().tipo; 
-        } else if (papelS) { 
-            userRole = papelS; 
-            await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS }); 
+        pEmpresa.classList.add('hidden');
+        pCandidato.classList.add('hidden');
+
+        if(user) {
+            document.getElementById('btn-entrar').style.display = 'none';
+            document.getElementById('btn-sair').style.display = 'block';
+            
+            const d = await getDoc(doc(db, "usuarios", user.uid));
+            if(d.exists()) { userRole = d.data().tipo; }
+            else if(papelS) { userRole = papelS; await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS }); }
+
+            uInfo.classList.remove('hidden');
+            document.getElementById('u-name').innerText = `Olá, ${user.displayName || 'Usuário'}!`;
+
+            if(userRole === 'empresa') pEmpresa.classList.remove('hidden');
+            else pCandidato.classList.remove('hidden');
         }
+    });
 
-        document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
-        document.getElementById('user-info').classList.remove('hidden');
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), { center: {lat:-19.9, lng:-43.9}, zoom: 14, disableDefaultUI: true });
+        circle = new google.maps.Circle({ map, radius: 5000, fillColor: '#0a66c2', fillOpacity: 0.1, strokeWeight: 0 });
+        
+        if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
+            const pos = {lat: p.coords.latitude, lng: p.coords.longitude};
+            map.setCenter(pos); circle.setCenter(pos); window.atualizar();
+        });
 
-        // BLOQUEIO RIGOROSO
-        if (userRole === 'empresa') {
-            document.getElementById('panel-empresa').classList.remove('hidden');
-        } else {
-            document.getElementById('area-candidato-profile').classList.remove('hidden');
-        }
-    }
-  });
+        map.addListener('click', async (e) => {
+            if(userRole !== 'empresa') return;
+            const emp = document.getElementById('v-emp').value;
+            const car = document.getElementById('v-cargo').value;
+            const wpp = document.getElementById('v-wpp').value;
+            if(!emp || !car || !wpp) return alert("Preencha todos os campos!");
+            await addDoc(collection(db, "vagas"), { emp, cargo: car, wpp, lat: e.latLng.lat(), lng: e.latLng.lng() });
+            alert("Vaga postada!");
+        });
 
-  function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 15, disableDefaultUI: true });
-    circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 });
-    
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(p => {
-            userPos = { lat: p.coords.latitude, lng: p.coords.longitude };
-            map.setCenter(userPos); circle.setCenter(userPos); window.atualizar();
+        onSnapshot(collection(db, "vagas"), (s) => {
+            allVagas = []; s.forEach(d => allVagas.push(d.data()));
+            window.atualizar();
         });
     }
 
-    document.getElementById('range-km').addEventListener('input', () => window.atualizar());
+    window.atualizar = () => {
+        const km = document.getElementById('range-km').value;
+        document.getElementById('km-val').innerText = km;
+        if(circle) circle.setRadius(km * 1000);
+        
+        const list = document.getElementById('jobs-list');
+        list.innerHTML = "";
+        markers.forEach(m => m.setMap(null));
+        markers = [];
 
-    map.addListener('click', async (e) => {
-        if (userRole !== 'empresa') return;
-        const emp = document.getElementById('v-emp').value;
-        const car = document.getElementById('v-cargo').value;
-        const wpp = document.getElementById('v-wpp').value;
-        if (!emp || !car || !wpp) return alert("Preencha todos os campos da vaga!");
-        await addDoc(collection(db, "vagas"), { emp, cargo: car, wpp, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga cadastrada!");
-    });
+        allVagas.forEach(v => {
+            const dist = google.maps.geometry.spherical.computeDistanceBetween(circle.getCenter(), new google.maps.LatLng(v.lat, v.lng));
+            if(dist <= km * 1000) {
+                const card = document.createElement('div');
+                card.className = "profile-card";
+                card.innerHTML = `<b>${v.cargo}</b><br>${v.emp}<br><a href="https://wa.me/55${v.wpp.replace(/\D/g,'')}" target="_blank" class="btn-wpp">WhatsApp</a>`;
+                list.appendChild(card);
+                markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
+            }
+        });
+    };
 
-    onSnapshot(collection(db, "vagas"), (snap) => {
-        allVagas = []; snap.forEach(d => allVagas.push(d.data()));
-        window.atualizar();
-    });
-  }
-
-  window.atualizar = () => {
-    const km = document.getElementById('range-km').value;
-    document.getElementById('km-val').innerText = km;
-    if(circle) circle.setRadius(km * 1000);
-    
-    const filtradas = allVagas.filter(v => {
-        return google.maps.geometry.spherical.computeDistanceBetween(
-            new google.maps.LatLng(userPos.lat, userPos.lng), 
-            new google.maps.LatLng(v.lat, v.lng)
-        ) <= (km * 1000);
-    });
-
-    const list = document.getElementById('jobs-list');
-    list.innerHTML = "";
-    markers.forEach(m => m.setMap(null));
-    markers = [];
-
-    filtradas.forEach(v => {
-        const card = document.createElement('div');
-        card.className = "profile-card";
-        // RESTAURAÇÃO DO BOTÃO WHATSAPP
-        card.innerHTML = `
-            <b>${v.cargo}</b><br>${v.emp}<br>
-            <a href="https://wa.me/55${v.wpp.replace(/\D/g,'')}" target="_blank" class="btn-whatsapp-vaga">
-                WhatsApp da Empresa
-            </a>
-        `;
-        list.appendChild(card);
-        markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
-    });
-  };
+    window.mostrarLogin = () => document.getElementById('login-modal').style.display='flex';
+    window.fecharLogin = () => document.getElementById('login-modal').style.display='none';
+    window.preparar = (p) => { papelS = p; document.getElementById('auth-box').style.opacity = '1'; document.getElementById('auth-box').style.pointerEvents = 'auto'; };
+    window.logar = async () => {
+        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        try { await signInWithEmailAndPassword(auth, e, p); } catch { await createUserWithEmailAndPassword(auth, e, p); }
+        window.fecharLogin();
+    };
+    window.google = () => signInWithPopup(auth, new GoogleAuthProvider()).then(() => window.fecharLogin());
+    window.logout = () => signOut(auth).then(() => location.reload());
+    window.trocarPerfil = async () => {
+        const novo = userRole === 'candidato' ? 'empresa' : 'candidato';
+        if(confirm(`Mudar para ${novo}?`)) { await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { tipo: novo }); location.reload(); }
+    };
 </script>
 </body>
 </html>
