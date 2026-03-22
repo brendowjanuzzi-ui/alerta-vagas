@@ -1,5 +1,4 @@
 export const mapsKey = "AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0";
-
 export const firebaseConfig = {
   apiKey: "AIzaSyDqc9r2B1IDMyRb0hpZBWDo5XmYVp8D3g",
   authDomain: "alertavaga.firebaseapp.com",
