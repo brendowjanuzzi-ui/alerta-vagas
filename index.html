@@ -45,7 +45,8 @@
     .btn-sec { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.95rem; }
 
     .social-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
-    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.9rem; }
+    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.9rem; transition: transform 0.1s; }
+    .btn-social:active { transform: scale(0.98); }
     .btn-apple { background: black; color: white; border: none; }
     .btn-whatsapp { background: #25d366; color: white; border: none; }
 
@@ -78,30 +79,32 @@
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
+            
             <div id="area-candidato-profile" class="hidden">
-                <label>O que você busca hoje?</label>
+                <label>Cargo pretendido:</label>
                 <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
-            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
-            <hr style="margin: 20px 0; opacity: 0.2;">
+
+            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Alternar tipo de conta</button>
+            <hr style="margin: 20px 0; opacity: 0.15;">
         </div>
 
         <div id="panel-distancia">
-            <label>Distância de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
+            <label>Raio de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
             <input type="range" id="range-km" min="1" max="50" value="5" step="1">
         </div>
 
         <div id="panel-empresa" class="hidden" style="margin-top: 20px;">
             <div class="profile-card" style="border-left: 5px solid var(--accent);">
-                <h4>Anunciar Nova Vaga</h4>
-                <input type="text" id="v-emp" placeholder="Nome da sua Empresa">
-                <input type="text" id="v-cargo" placeholder="Título do Cargo">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no local da vaga no mapa acima.</p>
+                <h4 style="margin-top:0">Anunciar Vaga</h4>
+                <input type="text" id="v-emp" placeholder="Nome da Empresa">
+                <input type="text" id="v-cargo" placeholder="Vaga (Ex: Vendedor)">
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem; margin-bottom:0">📍 Toque no mapa para fixar a vaga.</p>
             </div>
         </div>
 
         <div id="jobs-list">
-            <p style="text-align:center; color:#777; margin-top: 20px;">Buscando vagas...</p>
+            <p style="text-align:center; color:#777; margin-top: 30px;">Buscando oportunidades próximas...</p>
         </div>
     </div>
 </div>
@@ -109,7 +112,7 @@
 <div id="login-modal">
     <div class="modal-box">
         <h3>Acessar Alerta Vagas</h3>
-        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil:</p>
+        <p style="color:#666; margin-bottom: 20px;">Você deseja entrar como:</p>
         
         <div style="display:flex; gap:10px; margin-bottom:20px;">
             <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
@@ -119,21 +122,21 @@
         <div id="auth-fields" style="opacity:0.2; pointer-events:none; transition: all 0.3s ease;">
             <input type="email" id="auth-email" placeholder="E-mail">
             <input type="password" id="auth-pass" placeholder="Senha">
-            <button class="btn-main" onclick="window.authEmail()">Entrar ou Criar Conta</button>
+            <button class="btn-main" onclick="window.authEmail()">Entrar ou Cadastrar</button>
             
             <div class="social-btns">
                 <button class="btn-social" onclick="window.loginGoogle()">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Continuar com Google
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
                 </button>
-                <button class="btn-social btn-apple" onclick="alert('Integração Apple ID em breve')">
+                <button class="btn-social btn-apple" onclick="alert('Login Apple ID disponível na versão final')">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter: invert(1);"> Apple ID
                 </button>
-                <button class="btn-social btn-whatsapp" onclick="alert('Login via WhatsApp em breve')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18"> Entrar com WhatsApp
+                <button class="btn-social btn-whatsapp" onclick="alert('Login WhatsApp disponível na versão final')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18"> WhatsApp
                 </button>
             </div>
         </div>
-        <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao mapa</button>
+        <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Talvez mais tarde</button>
     </div>
 </div>
 
@@ -166,17 +169,17 @@
       papelS = p;
       document.getElementById('auth-fields').style.opacity = '1';
       document.getElementById('auth-fields').style.pointerEvents = 'auto';
-      const bc = (p === 'candidato');
-      document.getElementById('sel-c').style.background = bc ? '#0a66c2' : 'white';
-      document.getElementById('sel-c').style.color = bc ? 'white' : '#0a66c2';
-      document.getElementById('sel-e').style.background = !bc ? '#0a66c2' : 'white';
-      document.getElementById('sel-e').style.color = !bc ? 'white' : '#0a66c2';
+      const isC = p === 'candidato';
+      document.getElementById('sel-c').style.background = isC ? '#0a66c2' : 'white';
+      document.getElementById('sel-c').style.color = isC ? 'white' : '#0a66c2';
+      document.getElementById('sel-e').style.background = !isC ? '#0a66c2' : 'white';
+      document.getElementById('sel-e').style.color = !isC ? 'white' : '#0a66c2';
   };
 
   window.authEmail = async () => {
       const email = document.getElementById('auth-email').value;
       const pass = document.getElementById('auth-pass').value;
-      if(!email || !pass) return alert("Preencha e-mail e senha!");
+      if(!email || !pass) return alert("Por favor, preencha e-mail e senha.");
       try { await signInWithEmailAndPassword(auth, email, pass); }
       catch { await createUserWithEmailAndPassword(auth, email, pass); }
       window.fecharLogin();
@@ -188,7 +191,7 @@
   window.trocarPerfil = async () => {
       const user = auth.currentUser;
       if(!user) return;
-      const novoTipo = (userRole === 'candidato') ? 'empresa' : 'candidato';
+      const novoTipo = userRole === 'candidato' ? 'empresa' : 'candidato';
       if(confirm(`Mudar perfil para ${novoTipo.toUpperCase()}?`)) {
           await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
           location.reload();
@@ -203,7 +206,7 @@
         
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
         
-        // Reset visual antes de aplicar a lógica
+        // Garante que nada da empresa apareça por erro
         document.getElementById('panel-empresa').classList.add('hidden');
         document.getElementById('area-candidato-profile').classList.add('hidden');
 
@@ -216,7 +219,6 @@
 
         document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
         
-        // APLICAÇÃO RIGOROSA DE PERFIL
         if (userRole === 'empresa') {
             document.getElementById('panel-empresa').classList.remove('hidden');
         } else {
@@ -228,7 +230,11 @@
   });
 
   function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 15, disableDefaultUI: true });
+    map = new google.maps.Map(document.getElementById('map'), { 
+        center: userPos, zoom: 15, disableDefaultUI: true,
+        styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
+    });
+
     circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 });
     
     if (navigator.geolocation) {
@@ -244,9 +250,9 @@
         if (userRole !== 'empresa') return;
         const emp = document.getElementById('v-emp').value;
         const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha os dados da empresa e cargo antes de marcar no mapa!");
+        if (!emp || !car) return alert("Preencha o nome da empresa e o cargo primeiro!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga postada com sucesso!");
+        alert("Vaga publicada com sucesso!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
@@ -269,13 +275,13 @@
     });
 
     const list = document.getElementById('jobs-list');
-    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga no raio selecionado.</p>";
+    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga encontrada neste raio.</p>";
     markers.forEach(m => m.setMap(null));
     markers = [];
     filtradas.forEach(v => {
         const card = document.createElement('div');
         card.className = "profile-card";
-        card.innerHTML = `<div style="color:var(--primary); font-weight:700;">${v.cargo}</div><div style="font-size:0.9rem;">${v.emp}</div>`;
+        card.innerHTML = `<div style="color:var(--primary); font-weight:700;">${v.cargo}</div><div style="font-size:0.9rem; color:#666;">${v.emp}</div>`;
         list.appendChild(card);
         markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
