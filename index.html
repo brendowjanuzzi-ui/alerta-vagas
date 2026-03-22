@@ -45,7 +45,6 @@
     .social-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
     .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.9rem; }
     .btn-apple { background: black; color: white; border: none; }
-    .btn-whatsapp { background: #25d366; color: white; border: none; }
 
     .hidden { display: none !important; }
 
@@ -74,12 +73,10 @@
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
-            
             <div id="area-candidato-profile" class="hidden">
                 <label>O que você busca hoje?</label>
-                <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
+                <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor..." onblur="window.salvarCargoPretendido()">
             </div>
-
             <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Alternar tipo de conta</button>
             <hr style="margin: 20px 0; opacity: 0.15;">
         </div>
@@ -92,9 +89,9 @@
         <div id="panel-empresa" class="hidden" style="margin-top: 20px;">
             <div class="profile-card" style="border-left: 5px solid var(--accent);">
                 <h4>Anunciar Nova Vaga</h4>
-                <input type="text" id="v-emp" placeholder="Nome da sua Empresa">
+                <input type="text" id="v-emp" placeholder="Nome da Empresa">
                 <input type="text" id="v-cargo" placeholder="Título do Cargo">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no local da vaga no mapa acima.</p>
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no mapa acima para marcar o local.</p>
             </div>
         </div>
 
@@ -120,11 +117,8 @@
                 <button class="btn-social" onclick="window.loginGoogle()">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
                 </button>
-                <button class="btn-social btn-apple" onclick="alert('Login Apple ID em breve')">
+                <button class="btn-social btn-apple" onclick="alert('Em breve')">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter: invert(1);"> Apple ID
-                </button>
-                <button class="btn-social btn-whatsapp" onclick="alert('Login WhatsApp em breve')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18"> WhatsApp
                 </button>
             </div>
         </div>
@@ -138,11 +132,6 @@
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  const mapScript = document.createElement('script');
-  mapScript.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=geometry`;
-  mapScript.onload = () => { if(auth.currentUser || !userRole) initMap(); };
-  document.head.appendChild(mapScript);
-
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
@@ -150,6 +139,12 @@
 
   let map, circle, allVagas = [], markers = [], papelS = null, userRole = 'visitante';
   let userPos = { lat: -19.919, lng: -43.938 };
+
+  // --- CARREGAMENTO DO MAPA (SOLTO DO LOGIN) ---
+  const mapScript = document.createElement('script');
+  mapScript.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=geometry`;
+  mapScript.onload = () => initMap(); 
+  document.head.appendChild(mapScript);
 
   window.mostrarLogin = () => document.getElementById('login-modal').style.display='flex';
   window.fecharLogin = () => document.getElementById('login-modal').style.display='none';
@@ -177,18 +172,7 @@
   window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
   window.logout = () => signOut(auth).then(() => location.reload());
 
-  window.trocarPerfil = async () => {
-      const user = auth.currentUser;
-      if(!user) return;
-      const novoTipo = (userRole === 'candidato') ? 'empresa' : 'candidato';
-      if(confirm(`Mudar perfil para ${novoTipo.toUpperCase()}?`)) {
-          await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
-          location.reload();
-      }
-  };
-
   onAuthStateChanged(auth, async (user) => {
-    // RESET TOTAL: Garante que nada apareça por acidente antes da verificação
     document.getElementById('panel-empresa').classList.add('hidden');
     document.getElementById('area-candidato-profile').classList.add('hidden');
     document.getElementById('user-info').classList.add('hidden');
@@ -196,32 +180,23 @@
     if (user) {
         document.getElementById('btn-entrar').style.display = 'none';
         document.getElementById('btn-sair').style.display = 'block';
-        
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        
-        if (userDoc.exists()) {
-            userRole = userDoc.data().tipo;
-        } else if (papelS) {
-            userRole = papelS;
-            await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" });
-        }
+        if (userDoc.exists()) { userRole = userDoc.data().tipo; } 
+        else if (papelS) { userRole = papelS; await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" }); }
 
         document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
         document.getElementById('user-info').classList.remove('hidden');
 
-        // VERIFICAÇÃO RIGOROSA
-        if (userRole === 'empresa') {
-            document.getElementById('panel-empresa').classList.remove('hidden');
-        } else {
-            document.getElementById('area-candidato-profile').classList.remove('hidden');
-            if(userDoc.exists()) document.getElementById('u-cargo-input').value = userDoc.data().cargoPretendido || "";
-        }
+        if (userRole === 'empresa') { document.getElementById('panel-empresa').classList.remove('hidden'); } 
+        else { document.getElementById('area-candidato-profile').classList.remove('hidden'); }
+    } else {
+        document.getElementById('btn-entrar').style.display = 'block';
+        document.getElementById('btn-sair').style.display = 'none';
+        userRole = 'visitante';
     }
-    if(window.google) initMap();
   });
 
   function initMap() {
-    if(!document.getElementById('map')) return;
     map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 15, disableDefaultUI: true });
     circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 });
     
@@ -238,9 +213,9 @@
         if (userRole !== 'empresa') return;
         const emp = document.getElementById('v-emp').value;
         const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha nome da empresa e cargo antes de marcar no mapa!");
+        if (!emp || !car) return alert("Preencha os dados da vaga!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga cadastrada com sucesso!");
+        alert("Vaga postada!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
@@ -253,7 +228,6 @@
     const km = document.getElementById('range-km').value;
     document.getElementById('km-val').innerText = km;
     if(circle) circle.setRadius(km * 1000);
-    if(map && circle) map.fitBounds(circle.getBounds());
     
     const filtradas = allVagas.filter(v => {
         return google.maps.geometry.spherical.computeDistanceBetween(
@@ -263,22 +237,13 @@
     });
 
     const list = document.getElementById('jobs-list');
-    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga no raio selecionado.</p>";
+    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga próxima.</p>";
     markers.forEach(m => m.setMap(null));
     markers = [];
     filtradas.forEach(v => {
-        const card = document.createElement('div');
-        card.className = "profile-card";
-        card.innerHTML = `<div style="color:var(--primary); font-weight:700;">${v.cargo}</div><div style="font-size:0.9rem;">${v.emp}</div>`;
-        list.appendChild(card);
+        list.innerHTML += `<div class="profile-card"><b>${v.cargo}</b><br>${v.emp}</div>`;
         markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
-  };
-
-  window.salvarCargoPretendido = async () => {
-      const user = auth.currentUser;
-      const cargo = document.getElementById('u-cargo-input').value;
-      if(user) await updateDoc(doc(db, "usuarios", user.uid), { cargoPretendido: cargo });
   };
 </script>
 </body>
