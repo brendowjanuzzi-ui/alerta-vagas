@@ -6,12 +6,10 @@
   <title>Alerta Vagas Próximas de Você</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2frG9-iSSGQKeAsDUpyxUCSBdI0CCLp0&libraries=geometry"></script>
-
+  
   <style>
     :root { --primary: #0a66c2; --bg: #f3f2ef; --border: #e0e0e0; --accent: #057642; --text-main: #1a1a1a; }
     * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-    
     html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #e5e3df; }
 
     header { 
@@ -45,8 +43,7 @@
     .btn-sec { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.95rem; }
 
     .social-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
-    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.9rem; transition: transform 0.1s; }
-    .btn-social:active { transform: scale(0.98); }
+    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 0.9rem; }
     .btn-apple { background: black; color: white; border: none; }
     .btn-whatsapp { background: #25d366; color: white; border: none; }
 
@@ -55,9 +52,7 @@
     #login-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-box { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; max-height: 90vh; overflow-y: auto; }
 
-    input[type="text"], input[type="email"], input[type="password"] { 
-        width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 1rem;
-    }
+    input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 1rem; }
     input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
   </style>
 </head>
@@ -79,12 +74,10 @@
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
-            
             <div id="area-candidato-profile" class="hidden">
                 <label>Cargo pretendido:</label>
                 <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
-
             <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Alternar tipo de conta</button>
             <hr style="margin: 20px 0; opacity: 0.15;">
         </div>
@@ -96,15 +89,15 @@
 
         <div id="panel-empresa" class="hidden" style="margin-top: 20px;">
             <div class="profile-card" style="border-left: 5px solid var(--accent);">
-                <h4 style="margin-top:0">Anunciar Vaga</h4>
+                <h4>Anunciar Vaga</h4>
                 <input type="text" id="v-emp" placeholder="Nome da Empresa">
-                <input type="text" id="v-cargo" placeholder="Vaga (Ex: Vendedor)">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem; margin-bottom:0">📍 Toque no mapa para fixar a vaga.</p>
+                <input type="text" id="v-cargo" placeholder="Título da Vaga">
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no mapa para marcar o local.</p>
             </div>
         </div>
 
         <div id="jobs-list">
-            <p style="text-align:center; color:#777; margin-top: 30px;">Buscando oportunidades próximas...</p>
+            <p style="text-align:center; color:#777; margin-top: 30px;">Buscando vagas...</p>
         </div>
     </div>
 </div>
@@ -112,47 +105,42 @@
 <div id="login-modal">
     <div class="modal-box">
         <h3>Acessar Alerta Vagas</h3>
-        <p style="color:#666; margin-bottom: 20px;">Você deseja entrar como:</p>
-        
+        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil:</p>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
             <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
             <button id="sel-e" class="btn-sec" style="flex:1" onclick="window.prepararPapel('empresa')">Empresa</button>
         </div>
-
         <div id="auth-fields" style="opacity:0.2; pointer-events:none; transition: all 0.3s ease;">
             <input type="email" id="auth-email" placeholder="E-mail">
             <input type="password" id="auth-pass" placeholder="Senha">
-            <button class="btn-main" onclick="window.authEmail()">Entrar ou Cadastrar</button>
-            
+            <button class="btn-main" onclick="window.authEmail()">Entrar ou Criar Conta</button>
             <div class="social-btns">
                 <button class="btn-social" onclick="window.loginGoogle()">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
                 </button>
-                <button class="btn-social btn-apple" onclick="alert('Login Apple ID disponível na versão final')">
+                <button class="btn-social btn-apple" onclick="alert('Login Apple ID em breve')">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter: invert(1);"> Apple ID
                 </button>
-                <button class="btn-social btn-whatsapp" onclick="alert('Login WhatsApp disponível na versão final')">
+                <button class="btn-social btn-whatsapp" onclick="alert('Login WhatsApp em breve')">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18"> WhatsApp
                 </button>
             </div>
         </div>
-        <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Talvez mais tarde</button>
+        <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao mapa</button>
     </div>
 </div>
 
 <script type="module">
+  import { mapsKey, firebaseConfig } from './config.js';
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
-    authDomain: "alertavaga-56b46.firebaseapp.com",
-    projectId: "alertavaga-56b46",
-    storageBucket: "alertavaga-56b46.firebasestorage.app",
-    messagingSenderId: "1006667244458",
-    appId: "1:1006667244458:web:4c2f35f5520843452c01d3"
-  };
+  // Carrega o Google Maps dinamicamente usando a chave do config.js
+  const mapScript = document.createElement('script');
+  mapScript.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=geometry`;
+  mapScript.onload = () => { if(auth.currentUser || !userRole) initMap(); };
+  document.head.appendChild(mapScript);
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -179,7 +167,7 @@
   window.authEmail = async () => {
       const email = document.getElementById('auth-email').value;
       const pass = document.getElementById('auth-pass').value;
-      if(!email || !pass) return alert("Por favor, preencha e-mail e senha.");
+      if(!email || !pass) return alert("Preencha e-mail e senha!");
       try { await signInWithEmailAndPassword(auth, email, pass); }
       catch { await createUserWithEmailAndPassword(auth, email, pass); }
       window.fecharLogin();
@@ -205,8 +193,6 @@
         document.getElementById('user-info').classList.remove('hidden');
         
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        
-        // Garante que nada da empresa apareça por erro
         document.getElementById('panel-empresa').classList.add('hidden');
         document.getElementById('area-candidato-profile').classList.add('hidden');
 
@@ -226,15 +212,12 @@
             if(userDoc.exists()) document.getElementById('u-cargo-input').value = userDoc.data().cargoPretendido || "";
         }
     }
-    initMap();
+    if(window.google) initMap();
   });
 
   function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), { 
-        center: userPos, zoom: 15, disableDefaultUI: true,
-        styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
-    });
-
+    if(!document.getElementById('map')) return;
+    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 15, disableDefaultUI: true });
     circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 });
     
     if (navigator.geolocation) {
@@ -250,9 +233,9 @@
         if (userRole !== 'empresa') return;
         const emp = document.getElementById('v-emp').value;
         const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha o nome da empresa e o cargo primeiro!");
+        if (!emp || !car) return alert("Preencha nome da empresa e cargo antes de marcar no mapa!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga publicada com sucesso!");
+        alert("Vaga cadastrada!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
@@ -264,8 +247,8 @@
   window.atualizar = () => {
     const km = document.getElementById('range-km').value;
     document.getElementById('km-val').innerText = km;
-    circle.setRadius(km * 1000);
-    map.fitBounds(circle.getBounds());
+    if(circle) circle.setRadius(km * 1000);
+    if(map && circle) map.fitBounds(circle.getBounds());
     
     const filtradas = allVagas.filter(v => {
         return google.maps.geometry.spherical.computeDistanceBetween(
@@ -275,13 +258,13 @@
     });
 
     const list = document.getElementById('jobs-list');
-    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga encontrada neste raio.</p>";
+    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center; padding:20px;'>Nenhuma vaga no raio selecionado.</p>";
     markers.forEach(m => m.setMap(null));
     markers = [];
     filtradas.forEach(v => {
         const card = document.createElement('div');
         card.className = "profile-card";
-        card.innerHTML = `<div style="color:var(--primary); font-weight:700;">${v.cargo}</div><div style="font-size:0.9rem; color:#666;">${v.emp}</div>`;
+        card.innerHTML = `<div style="color:var(--primary); font-weight:700;">${v.cargo}</div><div style="font-size:0.9rem;">${v.emp}</div>`;
         list.appendChild(card);
         markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
