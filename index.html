@@ -198,9 +198,4 @@
           const vaga = doc.data();
           const item = document.createElement("div");
           item.className = "vaga-item list-group-item";
-          item.innerHTML = `<b>${vaga.titulo}</b><br>${vaga.descricao}<br>Salário: R$ ${vaga.salario}`;
-
-          const removeBtn = document.createElement("button");
-          removeBtn.className = "btn btn-sm btn-outline-danger favorito-btn";
-          removeBtn.innerText = "❌";
-          removeBtn
+          item.innerHTML = `<b>${vaga.titulo}</b><br>${vaga.descricao
