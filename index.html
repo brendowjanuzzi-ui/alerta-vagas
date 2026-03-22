@@ -18,8 +18,7 @@
         position: absolute; top: 10px; left: 10px; right: 10px;
         background: white; padding: 12px 18px; 
         display: flex; justify-content: space-between; align-items: center; 
-        z-index: 1000; height: 65px;
-        border-radius: 30px;
+        z-index: 1000; height: 65px; border-radius: 30px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .logo-title { color: var(--primary); font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
@@ -45,19 +44,9 @@
     .drag-handle { width: 45px; height: 5px; background: #e0e0e0; border-radius: 10px; display: inline-block; }
     .sidebar-content { padding: 0 20px 20px 20px; overflow-y: auto; flex: 1; }
     
-    h3, h4 { font-size: 1.3rem; margin-bottom: 15px; color: var(--text-main); }
-    label { font-size: 1.1rem; font-weight: 600; display: block; margin-bottom: 10px; }
-    
     .profile-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 15px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .job-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
-    .job-company { font-size: 1rem; color: #555; font-weight: 600; }
-
-    .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 30px; font-weight: 700; width: 100%; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
-    .btn-main:active { background: #084d91; }
+    .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 30px; font-weight: 700; width: 100%; cursor: pointer; font-size: 1rem; }
     .btn-sec { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 25px; font-weight: 700; width: 100%; cursor: pointer; font-size: 0.95rem; }
-
-    .social-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
-    .btn-social { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; font-weight: 700; border: 1px solid #ddd; background: white; cursor: pointer; }
 
     .hidden { display: none !important; }
 
@@ -67,14 +56,13 @@
     input[type="text"], input[type="email"], input[type="password"] { 
         width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 1rem;
     }
-
-    input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; margin-top: 10px; }
+    input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
   </style>
 </head>
 <body>
 
 <header>
-    <div class="logo-title"><div class="pulse-icon"></div> Alerta Vagas Próximas de Você</div>
+    <div class="logo-title"><div class="pulse-icon"></div> Alerta Vagas</div>
     <button id="btn-entrar" class="btn-main" style="padding: 10px 20px; width: auto;" onclick="window.mostrarLogin()">Entrar</button>
     <button id="btn-sair" class="btn-sec" style="display:none; width: auto;" onclick="window.logout()">Sair</button>
 </header>
@@ -89,30 +77,32 @@
     <div class="sidebar-content">
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
-            <div id="area-cargo-candidato" class="hidden">
-                <label>O que você procura hoje?</label>
-                <input type="text" id="u-cargo-input" placeholder="Ex: Motorista, Vendedor..." onblur="window.salvarCargoPretendido()">
+            
+            <div id="area-candidato-profile" class="hidden">
+                <label>Cargo pretendido:</label>
+                <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
-            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
-            <hr style="margin: 20px 0; opacity: 0.3;">
+
+            <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Mudar para Empresa/Candidato</button>
+            <hr style="margin: 20px 0; opacity: 0.2;">
         </div>
 
-        <div id="panel-candidato">
+        <div id="panel-distancia">
             <label>Distância de busca: <span id="km-val" style="color:var(--primary)">5</span> km</label>
             <input type="range" id="range-km" min="1" max="50" value="5" step="1">
         </div>
 
-        <div id="panel-empresa" class="hidden">
+        <div id="panel-empresa" class="hidden" style="margin-top: 20px;">
             <div class="profile-card" style="border-left: 5px solid var(--accent);">
-                <h4>Anunciar Vaga</h4>
-                <input type="text" id="v-emp" placeholder="Nome da Empresa">
-                <input type="text" id="v-cargo" placeholder="Cargo Ocupacional">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.9rem;">📍 Toque no local exato da vaga no mapa acima.</p>
+                <h4>Anunciar Nova Vaga</h4>
+                <input type="text" id="v-emp" placeholder="Nome da sua Empresa">
+                <input type="text" id="v-cargo" placeholder="Título do Cargo">
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Após preencher, toque no local da vaga no mapa.</p>
             </div>
         </div>
 
         <div id="jobs-list">
-            <p style="text-align:center; color:#777; margin-top: 20px;">Carregando vagas ao seu redor...</p>
+            <p style="text-align:center; color:#777; margin-top: 20px;">Buscando vagas...</p>
         </div>
     </div>
 </div>
@@ -120,22 +110,17 @@
 <div id="login-modal">
     <div class="modal-box">
         <h3>Acessar Alerta Vagas</h3>
-        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil para continuar:</p>
+        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil:</p>
         
         <div style="display:flex; gap:10px; margin-bottom:20px;">
             <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
             <button id="sel-e" class="btn-sec" style="flex:1" onclick="window.prepararPapel('empresa')">Empresa</button>
         </div>
 
-        <div id="auth-fields" style="opacity:0.2; pointer-events:none; transition: opacity 0.3s ease;">
-            <input type="email" id="auth-email" placeholder="Seu e-mail">
-            <input type="password" id="auth-pass" placeholder="Sua senha">
+        <div id="auth-fields" style="opacity:0.3; pointer-events:none; transition: all 0.3s ease;">
+            <input type="email" id="auth-email" placeholder="E-mail">
+            <input type="password" id="auth-pass" placeholder="Senha">
             <button class="btn-main" onclick="window.authEmail()">Entrar ou Criar Conta</button>
-            <div class="social-btns">
-                <button class="btn-social" onclick="window.loginGoogle()">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Continuar com Google
-                </button>
-            </div>
         </div>
         <button style="margin-top:20px; border:none; background:none; color:#999; cursor:pointer;" onclick="window.fecharLogin()">Voltar ao mapa</button>
     </div>
@@ -144,8 +129,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+  import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDqc9r2B1IDMyRb0hPZBWD3F43GlKZPzRQ",
@@ -159,8 +143,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  const messaging = getMessaging(app);
-  const provider = new GoogleAuthProvider();
 
   let map, circle, allVagas = [], markers = [], papelS = null, userRole = 'visitante';
   let userPos = { lat: -19.919, lng: -43.938 };
@@ -170,38 +152,36 @@
   
   window.prepararPapel = (p) => {
       papelS = p;
-      const authFields = document.getElementById('auth-fields');
-      authFields.style.opacity = '1';
-      authFields.style.pointerEvents = 'auto';
-      
-      const btnC = document.getElementById('sel-c');
-      const btnE = document.getElementById('sel-e');
-      btnC.style.background = p === 'candidato' ? '#0a66c2' : 'white';
-      btnC.style.color = p === 'candidato' ? 'white' : '#0a66c2';
-      btnE.style.background = p === 'empresa' ? '#0a66c2' : 'white';
-      btnE.style.color = p === 'empresa' ? 'white' : '#0a66c2';
+      document.getElementById('auth-fields').style.opacity = '1';
+      document.getElementById('auth-fields').style.pointerEvents = 'auto';
+      const bc = p === 'candidato';
+      document.getElementById('sel-c').style.background = bc ? '#0a66c2' : 'white';
+      document.getElementById('sel-c').style.color = bc ? 'white' : '#0a66c2';
+      document.getElementById('sel-e').style.background = !bc ? '#0a66c2' : 'white';
+      document.getElementById('sel-e').style.color = !bc ? 'white' : '#0a66c2';
   };
 
   window.authEmail = async () => {
       const email = document.getElementById('auth-email').value;
       const pass = document.getElementById('auth-pass').value;
-      if(!email || !pass) return alert("Por favor, preencha todos os campos.");
+      if(!email || !pass) return alert("Preencha tudo!");
       try { await signInWithEmailAndPassword(auth, email, pass); }
       catch { await createUserWithEmailAndPassword(auth, email, pass); }
       window.fecharLogin();
   };
 
-  window.loginGoogle = () => signInWithPopup(auth, provider).then(window.fecharLogin);
   window.logout = () => signOut(auth).then(() => location.reload());
 
-  // FUNÇÃO DE NOTIFICAÇÃO
-  async function checkNotifications() {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-          console.log("Notificações ativadas!");
-          // O token seria gerado aqui com sua chave VAPID
+  // FUNÇÃO CORRIGIDA PARA TROCAR PERFIL
+  window.trocarPerfil = async () => {
+      const user = auth.currentUser;
+      if(!user) return;
+      const novoTipo = userRole === 'candidato' ? 'empresa' : 'candidato';
+      if(confirm(`Mudar perfil para ${novoTipo.toUpperCase()}?`)) {
+          await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
+          location.reload();
       }
-  }
+  };
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -209,36 +189,33 @@
         document.getElementById('btn-sair').style.display = 'block';
         document.getElementById('user-info').classList.remove('hidden');
         
-        const d = await getDoc(doc(db, "usuarios", user.uid));
-        userRole = d.exists() ? d.data().tipo : papelS;
+        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
         
-        if (!d.exists() && papelS) await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" });
+        if (userDoc.exists()) {
+            userRole = userDoc.data().tipo;
+        } else if (papelS) {
+            userRole = papelS;
+            await setDoc(doc(db, "usuarios", user.uid), { tipo: papelS, cargoPretendido: "" });
+        }
 
-        document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
+        document.getElementById('u-name').innerText = `Olá, ${user.email.split('@')[0]}!`;
         
+        // LÓGICA DE EXIBIÇÃO POR PERFIL
         if (userRole === 'empresa') {
             document.getElementById('panel-empresa').classList.remove('hidden');
-            document.getElementById('area-cargo-candidato').classList.add('hidden');
+            document.getElementById('area-candidato-profile').classList.add('hidden');
         } else {
-            document.getElementById('area-cargo-candidato').classList.remove('hidden');
-            if(d.exists()) document.getElementById('u-cargo-input').value = d.data().cargoPretendido || "";
+            document.getElementById('panel-empresa').classList.add('hidden');
+            document.getElementById('area-candidato-profile').classList.remove('hidden');
         }
-        checkNotifications();
     }
     initMap();
   });
 
   function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), { 
-        center: userPos, zoom: 15, disableDefaultUI: true,
-        styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
-    });
-
-    circle = new google.maps.Circle({ 
-        map, center: userPos, radius: 5000, 
-        fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 
-    });
-
+    map = new google.maps.Map(document.getElementById('map'), { center: userPos, zoom: 15, disableDefaultUI: true });
+    circle = new google.maps.Circle({ map, center: userPos, radius: 5000, fillColor: "#0a66c2", fillOpacity: 0.1, strokeOpacity: 0 });
+    
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(p => {
             userPos = { lat: p.coords.latitude, lng: p.coords.longitude };
@@ -252,9 +229,9 @@
         if (userRole !== 'empresa') return;
         const emp = document.getElementById('v-emp').value;
         const car = document.getElementById('v-cargo').value;
-        if (!emp || !car) return alert("Preencha os dados da vaga primeiro!");
+        if (!emp || !car) return alert("Preencha o nome da empresa e o cargo!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga salva com sucesso!");
+        alert("Vaga postada!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
@@ -266,36 +243,28 @@
   window.atualizar = () => {
     const km = document.getElementById('range-km').value;
     document.getElementById('km-val').innerText = km;
+    circle.setRadius(km * 1000);
+    map.fitBounds(circle.getBounds());
     
-    if(circle) {
-        circle.setRadius(km * 1000);
-        const bounds = circle.getBounds();
-        if (bounds) map.fitBounds(bounds);
-    }
-
     const filtradas = allVagas.filter(v => {
-        const dist = google.maps.geometry.spherical.computeDistanceBetween(
+        return google.maps.geometry.spherical.computeDistanceBetween(
             new google.maps.LatLng(userPos.lat, userPos.lng), 
             new google.maps.LatLng(v.lat, v.lng)
-        );
-        return dist <= (km * 1000);
+        ) <= (km * 1000);
     });
-    renderVagas(filtradas);
-  };
 
-  function renderVagas(vagas) {
     const list = document.getElementById('jobs-list');
-    list.innerHTML = vagas.length ? "" : "<p style='text-align:center; padding: 20px;'>Nenhuma vaga encontrada neste raio.</p>";
+    list.innerHTML = filtradas.length ? "" : "<p style='text-align:center;'>Nenhuma vaga encontrada.</p>";
     markers.forEach(m => m.setMap(null));
     markers = [];
-    vagas.forEach(v => {
+    filtradas.forEach(v => {
         const card = document.createElement('div');
         card.className = "profile-card";
-        card.innerHTML = `<div class="job-title">${v.cargo}</div><div class="job-company">${v.emp}</div>`;
+        card.innerHTML = `<div style="color:var(--primary); font-weight:700;">${v.cargo}</div><div style="font-size:0.9rem;">${v.emp}</div>`;
         list.appendChild(card);
         markers.push(new google.maps.Marker({ position: {lat: v.lat, lng: v.lng}, map }));
     });
-  }
+  };
 </script>
 </body>
 </html>
