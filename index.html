@@ -79,7 +79,7 @@
         <div id="user-info" class="hidden">
             <h3 id="u-name">Olá!</h3>
             <div id="area-candidato-profile" class="hidden">
-                <label>Cargo pretendido:</label>
+                <label>O que você busca hoje?</label>
                 <input type="text" id="u-cargo-input" placeholder="Ex: Desenvolvedor, Vendedor..." onblur="window.salvarCargoPretendido()">
             </div>
             <button class="btn-sec" style="border:none; text-decoration: underline; margin-top: 5px; width: auto;" onclick="window.trocarPerfil()">Mudar tipo de conta</button>
@@ -96,7 +96,7 @@
                 <h4>Anunciar Nova Vaga</h4>
                 <input type="text" id="v-emp" placeholder="Nome da sua Empresa">
                 <input type="text" id="v-cargo" placeholder="Título do Cargo">
-                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Preencha e toque no local da vaga no mapa.</p>
+                <p style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">📍 Toque no local da vaga no mapa acima.</p>
             </div>
         </div>
 
@@ -109,7 +109,7 @@
 <div id="login-modal">
     <div class="modal-box">
         <h3>Acessar Alerta Vagas</h3>
-        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil para continuar:</p>
+        <p style="color:#666; margin-bottom: 20px;">Escolha seu perfil:</p>
         
         <div style="display:flex; gap:10px; margin-bottom:20px;">
             <button id="sel-c" class="btn-sec" style="flex:1" onclick="window.prepararPapel('candidato')">Candidato</button>
@@ -166,7 +166,7 @@
       papelS = p;
       document.getElementById('auth-fields').style.opacity = '1';
       document.getElementById('auth-fields').style.pointerEvents = 'auto';
-      const bc = p === 'candidato';
+      const bc = (p === 'candidato');
       document.getElementById('sel-c').style.background = bc ? '#0a66c2' : 'white';
       document.getElementById('sel-c').style.color = bc ? 'white' : '#0a66c2';
       document.getElementById('sel-e').style.background = !bc ? '#0a66c2' : 'white';
@@ -188,8 +188,8 @@
   window.trocarPerfil = async () => {
       const user = auth.currentUser;
       if(!user) return;
-      const novoTipo = userRole === 'candidato' ? 'empresa' : 'candidato';
-      if(confirm(`Deseja mudar seu perfil para ${novoTipo.toUpperCase()}?`)) {
+      const novoTipo = (userRole === 'candidato') ? 'empresa' : 'candidato';
+      if(confirm(`Mudar perfil para ${novoTipo.toUpperCase()}?`)) {
           await updateDoc(doc(db, "usuarios", user.uid), { tipo: novoTipo });
           location.reload();
       }
@@ -202,6 +202,11 @@
         document.getElementById('user-info').classList.remove('hidden');
         
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+        
+        // Reset visual antes de aplicar a lógica
+        document.getElementById('panel-empresa').classList.add('hidden');
+        document.getElementById('area-candidato-profile').classList.add('hidden');
+
         if (userDoc.exists()) {
             userRole = userDoc.data().tipo;
         } else if (papelS) {
@@ -211,11 +216,10 @@
 
         document.getElementById('u-name').innerText = `Olá, ${user.displayName || user.email.split('@')[0]}!`;
         
+        // APLICAÇÃO RIGOROSA DE PERFIL
         if (userRole === 'empresa') {
             document.getElementById('panel-empresa').classList.remove('hidden');
-            document.getElementById('area-candidato-profile').classList.add('hidden');
         } else {
-            document.getElementById('panel-empresa').classList.add('hidden');
             document.getElementById('area-candidato-profile').classList.remove('hidden');
             if(userDoc.exists()) document.getElementById('u-cargo-input').value = userDoc.data().cargoPretendido || "";
         }
@@ -242,7 +246,7 @@
         const car = document.getElementById('v-cargo').value;
         if (!emp || !car) return alert("Preencha os dados da empresa e cargo antes de marcar no mapa!");
         await addDoc(collection(db, "vagas"), { emp, cargo: car, lat: e.latLng.lat(), lng: e.latLng.lng(), timestamp: Date.now() });
-        alert("Vaga cadastrada no local!");
+        alert("Vaga postada com sucesso!");
     });
 
     onSnapshot(collection(db, "vagas"), (snap) => {
