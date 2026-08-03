@@ -2,7 +2,27 @@
 //  Alerta Vagas — app.js
 //  App de busca de empregos por geolocalização (Firebase + Leaflet)
 // ===================================================================
+// Variável global para o mapa
+let map;
 
+// Espera a página carregar
+document.addEventListener("DOMContentLoaded", () => {
+  const mapContainer = document.getElementById("map");
+
+  if (mapContainer && window.google) {
+    // Coordenadas iniciais: Belo Horizonte / Contagem
+    const opcoesMapa = {
+      center: { lat: -19.9208, lng: -43.9378 }, 
+      zoom: 13,
+      mapId: 'DEMO_MAP_ID' // Necessário para a biblioteca "marker"
+    };
+
+    // Cria o mapa na tela
+    map = new google.maps.Map(mapContainer, opcoesMapa);
+  } else {
+    console.error("Erro: Container do mapa não encontrado ou API do Google falhou ao carregar.");
+  }
+});
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc,
