@@ -1,49 +1,69 @@
-const CACHE_NAME = 'alertavaga-v1';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+// Service Worker — Alerta Vagas
+const CACHE_NAME = "alertavaga-v2";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-// Instalação: Cache dos arquivos estáticos
-self.addEventListener('install', (event) => {
+// Instalação: pré-cacheia os arquivos do app shell.
+// Como falha em qualquer arquivo ausente, garantimos que TODOS existem.
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
+  self.skipWaiting();
 });
 
-// Requisições: Tenta servir do cache, senão busca na rede
-self.addEventListener('fetch', (event) => {
+// Ativação: limpa caches antigos e assume o controle imediatamente.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+// Estratégia:
+//  - Navegação (HTML): network-first, caindo no cache (offline).
+//  - Firebase / mapas / fontes: só rede (não cacheamos APIs dinâmicas).
+//  - Demais arquivos próprios (css/js/ícones): cache-first.
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+
+  const url = new URL(req.url);
+
+  // Não intercepta Firebase nem tiles de mapa (deixamos a rede decidir).
+  const isFirebase = url.hostname.includes("firebaseio.com") ||
+                     url.hostname.includes("googleapis.com") ||
+                     url.hostname.includes("gstatic.com");
+  const isMapTile = url.hostname.includes("cartocdn.com") ||
+                    url.hostname.includes("tile.openstreetmap.org");
+  if (isFirebase || isMapTile) {
+    event.respondWith(fetch(req).catch(() => caches.match(req)));
+    return;
+  }
+
+  // Navegação (HTML): network-first.
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req).catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  // Demais recursos (próprios): cache-first.
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Retorna do cache se encontrar
-        if (response) {
-          return response;
-        }
-        // Se não, busca na internet
-        return fetch(event.request);
-      })
-  );
-});
-
-// Ativação: Limpa caches antigos se houver atualização
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
+      return res;
+    }).catch(() => cached))
   );
 });
