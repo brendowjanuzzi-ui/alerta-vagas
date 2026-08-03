@@ -748,7 +748,13 @@ input[type="range"]::-moz-range-thumb {
 }
 .map-action-btn:active { transform: scale(0.96); }
 .map-action-btn:hover { background: #f3f8ff; }
-.map-action-btn .ma-ico { font-size: 1.15rem; line-height: 1; }
+.map-action-btn .ma-ico { font-size: 1.15rem; line-height: 1; } 
+
+#map {
+  height: 100vh;
+  width: 100%;
+  min-height: 400px;
+}
 
 /* Posicionamento em telas largas (sidebar à direita) */
 @media (min-width: 900px) {
