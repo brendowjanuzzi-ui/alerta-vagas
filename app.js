@@ -32,6 +32,7 @@ const googleProvider = new GoogleAuthProvider();
 // ---------------- Estado ----------------
 const TIPOS = ["Todos", "CLT", "PJ", "Estágio", "Aprendiz", "Freelancer", "Temporário"];
 const DEFAULT_POS = { lat: -19.919, lng: -43.938 }; // Belo Horizonte
+const FAV_KEY = "alertavaga_favoritos";
 
 const state = {
   map: null,
@@ -48,6 +49,8 @@ const state = {
   tipoFiltro: "Todos",
   km: 5,
   sort: "dist",
+  favoritos: carregarFavoritos(),
+  soFavoritos: false,
   recaptchaVerifier: null,
   confirmationResult: null,
 };
@@ -272,6 +275,7 @@ function filtrarEOrdenar() {
     const dist = distVaga(v);
     v._dist = dist;
     if (dist > raio) return false;
+    if (state.soFavoritos && !isFavorito(v.id)) return false;
     if (state.tipoFiltro !== "Todos" && (v.tipo || "Outros") !== state.tipoFiltro) return false;
     if (q) {
       const texto = `${v.cargo || ""} ${v.emp || ""} ${v.descricao || ""} ${v.tipo || ""}`.toLowerCase();
@@ -300,15 +304,18 @@ function renderVagas(vagas) {
 
   // Texto de resultados
   const txt = $("results-text");
+  const ctx = state.soFavoritos ? " favorita" + (vagas.length === 1 ? "" : "s") : "";
+  const parte = state.demoMode ? " (exemplos)" : "";
   if (vagas.length === 0) {
-    txt.innerHTML = `Nenhuma vaga encontrada com esses filtros.`;
+    txt.innerHTML = state.soFavoritos
+      ? `Nenhuma vaga favorita ainda. Toque no ♥ nas vagas para salvar.`
+      : `Nenhuma vaga encontrada com esses filtros.`;
   } else {
-    const parte = state.demoMode ? ` (exemplos)` : "";
-    txt.innerHTML = `<strong>${vagas.length}</strong> vaga${vagas.length > 1 ? "s" : ""} até ${state.km} km${parte}`;
+    txt.innerHTML = `<strong>${vagas.length}</strong> ${ctx || "vaga"}${vagas.length > 1 ? "s" : ""} até ${state.km} km${parte}`;
   }
 
   if (vagas.length === 0) {
-    list.innerHTML = `<p class="placeholder">😕 Tente aumentar a distância ou limpar a busca.</p>`;
+    list.innerHTML = `<p class="placeholder">${state.soFavoritos ? "💔 Nenhuma vaga favorita ainda." : "😕 Tente aumentar a distância ou limpar a busca."}</p>`;
     return;
   }
 
@@ -317,9 +324,11 @@ function renderVagas(vagas) {
     const card = document.createElement("div");
     card.className = "profile-card";
     card.dataset.id = v.id;
+    const fav = isFavorito(v.id);
 
     const badges = [];
     if (v.tipo) badges.push(`<span class="badge tipo">${esc(v.tipo)}</span>`);
+    if (v.salario) badges.push(`<span class="badge">${esc(v.salario)}</span>`);
     if (state.demoMode) badges.push(`<span class="badge demo">exemplo</span>`);
 
     card.innerHTML = `
@@ -328,7 +337,8 @@ function renderVagas(vagas) {
           <p class="job-title">${esc(v.cargo)}</p>
           <p class="job-company">${esc(v.emp)}</p>
         </div>
-        ${v.salario ? `<span class="badge">${esc(v.salario)}</span>` : ""}
+        <button class="fav-btn ${fav ? "active" : ""}" data-fav="${esc(v.id)}"
+          onclick="window.toggleFavorito('${esc(v.id)}', event)" aria-label="Favoritar vaga" title="Favoritar">♥</button>
       </div>
       ${badges.length ? `<div class="job-meta">${badges.join("")}</div>` : ""}
       <p class="job-dist">📍 a ${formatarDistancia(v._dist)} de você</p>
@@ -386,6 +396,9 @@ function abrirDetalhe(v) {
     <div class="detail-actions">
       ${whats ? `<button class="btn-main btn-whats" onclick="window.open('${whats}','_blank')">💬 Candidatar-se no WhatsApp${curriculoPreenchido ? " (com meu currículo)" : ""}</button>` : ""}
       ${whats && !curriculoPreenchido ? `<button class="btn-link" onclick="window.abrirCurriculo()">✍️ Preencha seu currículo para candidaturas melhores</button>` : ""}
+      <button class="btn-sec fav-detail ${isFavorito(v.id) ? "fav-on" : ""}" onclick="window.toggleFavorito('${esc(v.id)}'); this.classList.toggle('fav-on')">
+        ${isFavorito(v.id) ? "♥ Favoritada" : "♡ Favoritar vaga"}
+      </button>
       <button class="btn-sec" onclick="window.verNoMapa('${v.id}')">🗺️ Ver no mapa</button>
       ${ehDono && v._real ? `<button class="btn-sec" style="color:var(--danger);border-color:var(--danger)" onclick="window.excluirVaga('${v.id}')">🗑️ Excluir minha vaga</button>` : ""}
       ${!whats && !ehDono ? `<p class="muted">Esta vaga não informou contato.</p>` : ""}
@@ -681,6 +694,44 @@ window.limparCurriculo = () => {
   mostrarAlerta("Currículo apagado.", true);
 };
 
+// ===================================================================
+//  FAVORITOS (♥) — salvos no aparelho
+// ===================================================================
+function carregarFavoritos() {
+  try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
+  catch { return []; }
+}
+function salvarFavoritos() {
+  localStorage.setItem(FAV_KEY, JSON.stringify(state.favoritos));
+}
+function isFavorito(id) { return state.favoritos.includes(id); }
+function atualizarFavCount() {
+  const el = $("fav-count");
+  if (el) el.textContent = state.favoritos.length ? `(${state.favoritos.length})` : "";
+}
+
+window.toggleFavorito = (id, ev) => {
+  if (ev) ev.stopPropagation();
+  const i = state.favoritos.indexOf(id);
+  if (i === -1) state.favoritos.push(id); else state.favoritos.splice(i, 1);
+  salvarFavoritos();
+  atualizarFavCount();
+
+  // Atualiza o coração do card clicado sem re-renderizar tudo
+  document.querySelectorAll(`.profile-card[data-id="${CSS.escape(id)}"] .fav-btn`)
+    .forEach(b => b.classList.toggle("active", isFavorito(id)));
+
+  // Se estiver vendo só favoritas, precisa re-renderizar a lista
+  if (state.soFavoritos) atualizar();
+};
+
+window.toggleFavoritosFilter = () => {
+  state.soFavoritos = !state.soFavoritos;
+  $("fav-toggle").classList.toggle("active", state.soFavoritos);
+  atualizar();
+};
+
+
 
 // ===================================================================
 //  CHIPS DE FILTRO + EVENTOS DE UI
@@ -761,6 +812,7 @@ function boot() {
   bindUI();
   initMap();                 // mapa já na carga (independente do auth)
   atualizarStatusCurriculo();
+  atualizarFavCount();
   // Pré-preenche a busca com o cargo do currículo salvo
   const cargoSalvo = carregarCurriculo().cargo;
   if (cargoSalvo) {
