@@ -18,6 +18,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5n/N0ZDvEg=" crossorigin="" />
 
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        crossorigin="" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -36,6 +42,24 @@
   </header>
 
   <div id="map" role="application" aria-label="Mapa de vagas"></div>
+
+  <!-- Legenda do mapa -->
+  <div id="map-legend" class="map-legend" aria-live="polite">
+    <button id="legend-toggle" class="legend-toggle" title="Legenda do mapa" aria-label="Mostrar/ocultar legenda do mapa">🗺️</button>
+    <div class="legend-body hidden" id="legend-body">
+      <button class="legend-close" id="legend-close" aria-label="Fechar legenda">✕</button>
+      <h5>Legenda do mapa</h5>
+      <ul class="legend-list" id="legend-list"></ul>
+      <p class="legend-radius"><span class="legend-dot radius"></span> Raio de busca: <strong id="legend-km">5</strong> km</p>
+    </div>
+  </div>
+
+  <!-- Ações sobre o mapa -->
+  <div class="map-actions">
+    <button id="btn-fit" class="map-action-btn" title="Enquadrar todas as vagas no mapa" aria-label="Enquadrar todas as vagas no mapa">
+      <span class="ma-ico">⤢</span><span class="ma-txt">Ver todas</span>
+    </button>
+  </div>
 
   <!-- Alerta / mensagens do sistema -->
   <div id="alert-banner" class="alert-banner hidden" role="status"></div>
@@ -242,6 +266,9 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Leaflet MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 
   <script type="module" src="app.js"></script>
 </body>

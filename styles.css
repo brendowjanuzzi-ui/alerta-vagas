@@ -91,36 +91,57 @@ html, body {
 }
 .leaflet-container { font-family: inherit; }
 
-/* Marcador customizado */
+/* Marcador customizado (pino colorido por tipo) */
 .job-pin {
   background: none;
   border: none;
 }
-.job-pin span {
-  display: block;
+.job-pin .pin-shape {
   width: 34px;
   height: 34px;
-  background: var(--primary);
+  background: var(--pin-color, var(--primary));
   border: 3px solid #fff;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   position: relative;
   margin-bottom: 8px;
+  transition: transform .15s ease;
 }
-.job-pin span::after {
-  content: "💼";
+.job-pin .pin-emoji {
   position: absolute;
-  transform: rotate(45deg);
   inset: 0;
   display: grid;
   place-items: center;
+  transform: rotate(45deg);
   font-size: 14px;
+  line-height: 1;
 }
-.job-pin.highlight span { background: var(--accent); transform: rotate(-45deg) scale(1.18); }
+/* Realce do pino (hover no card / ver no mapa) */
+.job-pin.pin-highlight .pin-shape,
+.job-pin .pin-shape.pin-highlight {
+  background: var(--accent);
+  transform: rotate(-45deg) scale(1.22);
+}
+.user-pin .pin-shape { background: var(--accent); }
 
-.user-pin span { background: var(--accent); }
-.user-pin span::after { content: "📍"; }
+/* Agrupadores (clusters) — círculos legíveis com o número de vagas */
+.job-cluster { background: none; }
+.cluster-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: .9rem;
+}
+.cluster-m { background: #0a66c2; width: 46px; height: 46px; font-size: 1rem; }
+.cluster-l { background: #084c92; width: 54px; height: 54px; font-size: 1.1rem; }
 
 /* Popup */
 .leaflet-popup-content { margin: 12px 14px; font-family: inherit; }
@@ -614,3 +635,123 @@ input[type="range"]::-moz-range-thumb {
 
 /* Nitidez dos tiles */
 .leaflet-tile { image-rendering: -webkit-optimize-contrast; }
+
+/* ---------- Legenda do mapa ---------- */
+.map-legend {
+  position: absolute;
+  top: 80px;
+  left: 12px;
+  z-index: 1200;
+  font-family: inherit;
+}
+.legend-toggle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform .12s;
+}
+.legend-toggle:active { transform: scale(0.92); }
+.legend-body {
+  margin-top: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  width: 212px;
+  position: relative;
+}
+.legend-body h5 { margin: 0 0 10px; font-size: 1rem; color: var(--text-main); }
+.legend-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: #f0f0ee;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+.legend-list { list-style: none; margin: 0; padding: 0; }
+.legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .86rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 7px;
+}
+.legend-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  flex-shrink: 0;
+}
+.legend-dot > span { transform: rotate(45deg); font-size: 11px; line-height: 1; }
+.legend-dot.radius {
+  background: rgba(10, 102, 194, .12);
+  border: 2px solid var(--primary);
+  transform: rotate(0);
+  border-radius: 50%;
+}
+.legend-radius {
+  margin: 8px 0 0;
+  font-size: .82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+/* ---------- Ações sobre o mapa ---------- */
+.map-actions {
+  position: absolute;
+  top: 80px;
+  right: 12px;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.map-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--pill);
+  box-shadow: var(--shadow-sm);
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: .9rem;
+  font-family: inherit;
+  color: var(--primary);
+  cursor: pointer;
+  transition: transform .12s, background .15s;
+}
+.map-action-btn:active { transform: scale(0.96); }
+.map-action-btn:hover { background: #f3f8ff; }
+.map-action-btn .ma-ico { font-size: 1.15rem; line-height: 1; }
+
+/* Posicionamento em telas largas (sidebar à direita) */
+@media (min-width: 900px) {
+  .map-legend { top: 84px; left: 16px; }
+  .map-actions { top: auto; bottom: 24px; right: auto; left: 16px; }
+}
