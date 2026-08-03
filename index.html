@@ -64,6 +64,11 @@
 
       <!-- Painel do candidato: filtros -->
       <section id="panel-candidato">
+        <button class="curriculo-btn" id="btn-curriculo" onclick="window.abrirCurriculo()">
+          <span>📄 Meu Currículo</span>
+          <span class="badge" id="curriculo-status">preencher</span>
+        </button>
+
         <label for="search-input" class="field-label">🔎 Buscar vaga ou empresa</label>
         <input type="text" id="search-input" placeholder="Ex: Motorista, Vendedor..." />
 
@@ -174,6 +179,45 @@
     <div class="modal-box" id="job-modal-content">
       <button class="modal-close" onclick="window.fecharDetalhe()" aria-label="Fechar">✕</button>
       <div id="job-detail"></div>
+    </div>
+  </div>
+
+  <!-- Modal do currículo -->
+  <div id="curriculo-modal" class="modal" role="dialog" aria-modal="true" aria-label="Meu currículo">
+    <div class="modal-box">
+      <button class="modal-close" onclick="window.fecharCurriculo()" aria-label="Fechar">✕</button>
+      <h3>📄 Meu Currículo</h3>
+      <p class="muted">Preencha once. Ao se candidatar, esse resumo vai automático na mensagem.</p>
+
+      <label for="c-nome" class="field-label" style="margin-top:8px">Nome completo *</label>
+      <input type="text" id="c-nome" placeholder="Seu nome" autocomplete="name" />
+
+      <label for="c-cargo" class="field-label">Cargo / área pretendido</label>
+      <input type="text" id="c-cargo" placeholder="Ex: Motorista, Vendedor, Auxiliar..." />
+
+      <label for="c-tel" class="field-label">Seu WhatsApp / Telefone</label>
+      <input type="tel" id="c-tel" placeholder="(31) 99999-9999" autocomplete="tel" />
+
+      <label for="c-cidade" class="field-label">Cidade / Bairro</label>
+      <input type="text" id="c-cidade" placeholder="Ex: Belo Horizonte - Centro" />
+
+      <label for="c-esc" class="field-label">Escolaridade</label>
+      <select id="c-esc">
+        <option value="">Selecione</option>
+        <option>Fundamental incompleto</option>
+        <option>Fundamental completo</option>
+        <option>Médio incompleto</option>
+        <option>Médio completo</option>
+        <option>Superior cursando</option>
+        <option>Superior completo</option>
+        <option>Pós-graduação / MBA</option>
+      </select>
+
+      <label for="c-exp" class="field-label">Resumo / Experiências</label>
+      <textarea id="c-exp" rows="4" placeholder="Conte um pouco da sua experiência, últimas vagas, habilidades..."></textarea>
+
+      <button class="btn-main" onclick="window.salvarCurriculo()">💾 Salvar currículo</button>
+      <button class="btn-link" onclick="window.limparCurriculo()">Apagar currículo</button>
     </div>
   </div>
 

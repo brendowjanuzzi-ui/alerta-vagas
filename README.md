@@ -12,6 +12,7 @@ Uma plataforma inteligente de busca de empregos baseada em geolocalização, con
 - **Filtros Avançados**: busca por texto, filtro por tipo de contratação (CLT, PJ, Estágio...) e ordenação (distância, recentes, salário).
 - **Detalhes da Vaga**: cargo, empresa, salário, descrição e contato.
 - **Candidatura Direta**: aplique-se a uma vaga com um toque, via **WhatsApp**.
+- **Mini Currículo**: o candidato monta seu currículo (nome, área, escolaridade, contato, experiência) e o resumo vai automático na mensagem de candidatura. Salvo no aparelho (offline) e sincronizado com a conta quando logado.
 - **Dois Perfis**: candidatos buscam vagas; empresas anunciam tocando no mapa e gerenciam suas próprias vagas.
 - **PWA Instalável**: funciona offline (app shell em cache) e pode ser instalado no celular.
 

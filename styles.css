@@ -330,6 +330,29 @@ input[type="range"] { width: 100%; accent-color: var(--primary); margin: 4px 0 0
 .results-count { margin: 14px 0 4px; }
 #results-text { font-size: .88rem; color: var(--text-muted); font-weight: 600; }
 
+/* ---------- Botão de currículo ---------- */
+.curriculo-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--accent-light);
+  border: 1px solid #c9e6d8;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 4px 0 8px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: .95rem;
+  transition: transform .12s, box-shadow .15s;
+}
+.curriculo-btn:active { transform: scale(0.99); }
+.curriculo-btn:hover { box-shadow: var(--shadow-sm); }
+.curriculo-btn .badge { background: #fff; color: var(--accent); }
+.curriculo-btn .badge.completo { background: var(--accent); color: #fff; }
+
 /* ---------- Alerta / banner ---------- */
 .alert-banner {
   position: absolute;

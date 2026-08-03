@@ -365,12 +365,13 @@ function renderVagas(vagas) {
 function abrirDetalhe(v) {
   const box = $("job-detail");
   const ehDono = auth.currentUser && v.uid === auth.currentUser.uid;
+  const curriculoPreenchido = !!(carregarCurriculo().nome || "").trim();
   const badges = [];
   if (v.tipo) badges.push(`<span class="badge tipo">${esc(v.tipo)}</span>`);
   if (state.demoMode) badges.push(`<span class="badge demo">exemplo</span>`);
 
   const contato = (v.contato || "").replace(/\D/g, "");
-  const msg = encodeURIComponent(`Olá! Vim pelo Alerta Vagas e tenho interesse na vaga de ${v.cargo}.`);
+  const msg = encodeURIComponent(montarMensagemCandidatura(v));
   const whats = contato ? `https://wa.me/${contato}?text=${msg}` : "";
 
   box.innerHTML = `
@@ -383,7 +384,8 @@ function abrirDetalhe(v) {
     ${v.descricao ? `<div class="detail-row"><span class="ico">📝</span><span style="flex:1"><strong>Descrição:</strong><br>${esc(v.descricao)}</span></div>` : ""}
 
     <div class="detail-actions">
-      ${whats ? `<button class="btn-main btn-whats" onclick="window.open('${whats}','_blank')">💬 Candidatar-se no WhatsApp</button>` : ""}
+      ${whats ? `<button class="btn-main btn-whats" onclick="window.open('${whats}','_blank')">💬 Candidatar-se no WhatsApp${curriculoPreenchido ? " (com meu currículo)" : ""}</button>` : ""}
+      ${whats && !curriculoPreenchido ? `<button class="btn-link" onclick="window.abrirCurriculo()">✍️ Preencha seu currículo para candidaturas melhores</button>` : ""}
       <button class="btn-sec" onclick="window.verNoMapa('${v.id}')">🗺️ Ver no mapa</button>
       ${ehDono && v._real ? `<button class="btn-sec" style="color:var(--danger);border-color:var(--danger)" onclick="window.excluirVaga('${v.id}')">🗑️ Excluir minha vaga</button>` : ""}
       ${!whats && !ehDono ? `<p class="muted">Esta vaga não informou contato.</p>` : ""}
@@ -430,8 +432,10 @@ onAuthStateChanged(auth, async (user) => {
   badge.innerText = state.userRole === "empresa" ? "🏢 Empresa" : "🧑 Candidato";
 
   // Carrega cargo pretendido salvo para preencher a busca
-  if (d.exists() && d.data().cargoPretendido) {
-    state.search = d.data().cargoPretendido;
+  // (dá prioridade ao cargo do currículo salvo no aparelho)
+  const cargoSalvo = carregarCurriculo().cargo || (d.exists() ? d.data().cargoPretendido : "");
+  if (cargoSalvo) {
+    state.search = cargoSalvo;
     $("search-input").value = state.search;
   }
 
@@ -590,6 +594,95 @@ window.limparFormVaga = () => {
 };
 
 // ===================================================================
+//  CURRÍCULO DO CANDIDATO (localStorage + sincronização opcional)
+// ===================================================================
+const CURR_KEY = "alertavaga_curriculo";
+const CURR_FIELDS = ["c-nome", "c-cargo", "c-tel", "c-cidade", "c-esc", "c-exp"];
+
+function carregarCurriculo() {
+  try { return JSON.parse(localStorage.getItem(CURR_KEY)) || {}; }
+  catch { return {}; }
+}
+function salvarCurriculoStorage(c) {
+  localStorage.setItem(CURR_KEY, JSON.stringify(c));
+}
+
+function atualizarStatusCurriculo() {
+  const c = carregarCurriculo();
+  const badge = $("curriculo-status");
+  if (!badge) return;
+  const ok = !!(c.nome && c.nome.trim());
+  badge.textContent = ok ? "✓ preenchido" : "preencher";
+  badge.classList.toggle("completo", ok);
+}
+
+function montarMensagemCandidatura(vaga) {
+  const c = carregarCurriculo();
+  const linhas = [`Olá! Vim pelo Alerta Vagas e tenho interesse na vaga de ${vaga.cargo}.`];
+  if (c.nome) linhas.push(`Nome: ${c.nome}`);
+  if (c.cargo) linhas.push(`Área: ${c.cargo}`);
+  if (c.esc) linhas.push(`Escolaridade: ${c.esc}`);
+  if (c.cidade) linhas.push(`Região: ${c.cidade}`);
+  if (c.tel) linhas.push(`Meu contato: ${c.tel}`);
+  if (c.exp) linhas.push(`Resumo: ${String(c.exp).slice(0, 300)}`);
+  return linhas.join("\n");
+}
+
+window.abrirCurriculo = () => {
+  const c = carregarCurriculo();
+  CURR_FIELDS.forEach(id => { $(id).value = c[id.replace("c-", "")] || ""; });
+  $("curriculo-modal").classList.add("show");
+};
+
+window.fecharCurriculo = () => $("curriculo-modal").classList.remove("show");
+
+window.salvarCurriculo = async () => {
+  const nome = $("c-nome").value.trim();
+  if (!nome) { mostrarAlerta("Preencha pelo menos o seu nome.", true); $("c-nome").focus(); return; }
+  const c = {
+    nome,
+    cargo: $("c-cargo").value.trim(),
+    tel: $("c-tel").value.trim(),
+    cidade: $("c-cidade").value.trim(),
+    esc: $("c-esc").value,
+    exp: $("c-exp").value.trim(),
+    atualizado: Date.now(),
+  };
+  salvarCurriculoStorage(c);
+  atualizarStatusCurriculo();
+
+  // Usa o cargo do currículo como busca padrão
+  if (c.cargo) {
+    state.search = c.cargo;
+    $("search-input").value = c.cargo;
+    atualizar();
+  }
+
+  // Sincroniza com a conta (melhor esforço) se logado
+  if (auth.currentUser) {
+    try {
+      await updateDoc(doc(db, "usuarios", auth.currentUser.uid), {
+        cargoPretendido: c.cargo,
+        nome: c.nome,
+        curriculo: c,
+      });
+    } catch (e) { /* sem problema: o currículo fica salvo no aparelho */ }
+  }
+
+  window.fecharCurriculo();
+  mostrarAlerta("✅ Currículo salvo! Ele já vai nas suas candidaturas.", true);
+};
+
+window.limparCurriculo = () => {
+  if (!confirm("Apagar o currículo salvo neste aparelho?")) return;
+  localStorage.removeItem(CURR_KEY);
+  CURR_FIELDS.forEach(id => $(id).value = "");
+  atualizarStatusCurriculo();
+  mostrarAlerta("Currículo apagado.", true);
+};
+
+
+// ===================================================================
 //  CHIPS DE FILTRO + EVENTOS DE UI
 // ===================================================================
 function montarChips() {
@@ -652,10 +745,11 @@ function bindUI() {
   // Fecha modais ao clicar no fundo
   $("login-modal").addEventListener("click", (e) => { if (e.target.id === "login-modal") window.fecharLogin(); });
   $("job-modal").addEventListener("click", (e) => { if (e.target.id === "job-modal") window.fecharDetalhe(); });
+  $("curriculo-modal").addEventListener("click", (e) => { if (e.target.id === "curriculo-modal") window.fecharCurriculo(); });
 
   // ESC fecha modais
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { window.fecharLogin(); window.fecharDetalhe(); }
+    if (e.key === "Escape") { window.fecharLogin(); window.fecharDetalhe(); window.fecharCurriculo(); }
   });
 }
 
@@ -666,6 +760,13 @@ function boot() {
   montarChips();
   bindUI();
   initMap();                 // mapa já na carga (independente do auth)
+  atualizarStatusCurriculo();
+  // Pré-preenche a busca com o cargo do currículo salvo
+  const cargoSalvo = carregarCurriculo().cargo;
+  if (cargoSalvo) {
+    state.search = cargoSalvo;
+    $("search-input").value = cargoSalvo;
+  }
   // No mobile, abre o painel até a posição "meio" para mostrar vagas/filtros
   const sb = $("sidebar");
   sb.dataset.state = "half";
