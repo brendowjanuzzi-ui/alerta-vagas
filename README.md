@@ -14,6 +14,7 @@ Uma plataforma inteligente de busca de empregos baseada em geolocalização, con
 - **Candidatura Direta**: aplique-se a uma vaga com um toque, via **WhatsApp**.
 - **Mini Currículo**: o candidato monta seu currículo (nome, área, escolaridade, contato, experiência) e o resumo vai automático na mensagem de candidatura. Salvo no aparelho (offline) e sincronizado com a conta quando logado.
 - **Vagas Favoritas (♥)**: favorite vagas com um toque e filtre só pelas salvas — tudo guardado no aparelho, funciona offline.
+- **Alerta de Novas Vagas**: o app avisa (toast + sino 🔔) sempre que uma vaga nova aparece perto de você desde a última visita. Alerta 100% no próprio app, sem configurar servidor.
 - **Dois Perfis**: candidatos buscam vagas; empresas anunciam tocando no mapa e gerenciam suas próprias vagas.
 - **PWA Instalável**: funciona offline (app shell em cache) e pode ser instalado no celular.
 

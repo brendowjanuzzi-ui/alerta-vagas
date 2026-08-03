@@ -29,6 +29,7 @@
     </div>
     <div class="header-actions">
       <button id="btn-localizar" class="icon-btn" title="Usar minha localização" aria-label="Usar minha localização">📍</button>
+      <button id="btn-novidades" class="icon-btn icon-bell" onclick="window.abrirNovidades()" title="Novidades" aria-label="Novidades">🔔<span id="badge-novidades" class="bell-badge hidden">0</span></button>
       <button id="btn-entrar" class="btn-main btn-sm" onclick="window.mostrarLogin()">Entrar</button>
       <button id="btn-sair" class="btn-sec btn-sm hidden" onclick="window.logout()">Sair</button>
     </div>
@@ -38,6 +39,9 @@
 
   <!-- Alerta / mensagens do sistema -->
   <div id="alert-banner" class="alert-banner hidden" role="status"></div>
+
+  <!-- Toast de nova vaga próxima -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <aside id="sidebar" aria-label="Painel de vagas">
     <button class="drag-handle-container" id="sidebar-toggle" aria-label="Abrir/fechar painel">
@@ -222,6 +226,16 @@
 
       <button class="btn-main" onclick="window.salvarCurriculo()">💾 Salvar currículo</button>
       <button class="btn-link" onclick="window.limparCurriculo()">Apagar currículo</button>
+    </div>
+  </div>
+
+  <!-- Modal de novidades (vagas novas próximas) -->
+  <div id="novidades-modal" class="modal" role="dialog" aria-modal="true" aria-label="Novidades">
+    <div class="modal-box">
+      <button class="modal-close" onclick="window.fecharNovidades()" aria-label="Fechar">✕</button>
+      <h3>🔔 Novidades perto de você</h3>
+      <p class="muted">Vagas novas que apareceram no seu raio de busca desde a última visita.</p>
+      <div id="novidades-list"></div>
     </div>
   </div>
 

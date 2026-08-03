@@ -33,6 +33,7 @@ const googleProvider = new GoogleAuthProvider();
 const TIPOS = ["Todos", "CLT", "PJ", "Estágio", "Aprendiz", "Freelancer", "Temporário"];
 const DEFAULT_POS = { lat: -19.919, lng: -43.938 }; // Belo Horizonte
 const FAV_KEY = "alertavaga_favoritos";
+const VISTOS_KEY = "alertavaga_vistos";
 
 const state = {
   map: null,
@@ -51,6 +52,8 @@ const state = {
   sort: "dist",
   favoritos: carregarFavoritos(),
   soFavoritos: false,
+  vistos: carregarVistos(),
+  novas: [],
   recaptchaVerifier: null,
   confirmationResult: null,
 };
@@ -249,6 +252,7 @@ function subscribeVagas() {
   onSnapshot(collection(db, "vagas"), (snap) => {
     const arr = [];
     snap.forEach(d => arr.push({ id: d.id, _real: true, ...d.data() }));
+    registrarNovidades(arr);   // detecta vagas novas desde a última visita
     state.demoMode = false;
     if (arr.length === 0) {
       state.allVagas = gerarVagasDemo();
@@ -731,6 +735,81 @@ window.toggleFavoritosFilter = () => {
   atualizar();
 };
 
+// ===================================================================
+//  ALERTA DE NOVAS VAGAS (toast + sino) — 100% no app, sem servidor
+// ===================================================================
+function carregarVistos() {
+  try { return new Set((JSON.parse(localStorage.getItem(VISTOS_KEY)) || []).slice(-1000)); }
+  catch { return new Set(); }
+}
+function salvarVistos() {
+  localStorage.setItem(VISTOS_KEY, JSON.stringify([...state.vistos].slice(-1000)));
+}
+
+function registrarNovidades(arr) {
+  const semHistorico = state.vistos.size === 0;
+  const novosEste = [];
+  arr.forEach(v => {
+    const ehNova = v._real && !semHistorico && !state.vistos.has(v.id) &&
+      !state.novas.some(n => n.id === v.id);
+    if (ehNova) novosEste.push(v);
+    state.vistos.add(v.id);
+  });
+  salvarVistos();
+  if (novosEste.length) {
+    state.novas.push(...novosEste);
+    atualizarBadgeNovidades();
+    mostrarToastNovidade(novosEste[novosEste.length - 1]);
+  }
+}
+
+function mostrarToastNovidade(v) {
+  const t = $("toast");
+  const total = state.novas.length;
+  const sub = total > 1
+    ? `<div class="toast-sub">${esc(v.emp || "")} · +${total - 1} outra(s)</div>`
+    : `<div class="toast-sub">${esc(v.emp || "")}</div>`;
+  t.innerHTML = `<span class="toast-emoji">🆕</span><div class="toast-main"><div class="toast-title">Nova vaga: ${esc(v.cargo)}</div>${sub}</div>`;
+  t.classList.add("show");
+  t.onclick = () => { t.classList.remove("show"); abrirDetalhe(v); };
+  clearTimeout(state._toastTimer);
+  state._toastTimer = setTimeout(() => t.classList.remove("show"), 7000);
+}
+
+function atualizarBadgeNovidades() {
+  const b = $("badge-novidades");
+  const n = state.novas.length;
+  if (n > 0) { b.textContent = n > 9 ? "9+" : n; b.classList.remove("hidden"); }
+  else b.classList.add("hidden");
+}
+
+window.abrirDetalhePub = (id) => {
+  const v = state.allVagas.find(x => x.id === id) || state.novas.find(x => x.id === id);
+  if (v) abrirDetalhe(v);
+};
+
+window.abrirNovidades = () => {
+  const list = $("novidades-list");
+  if (!state.novas.length) {
+    list.innerHTML = `<p class="placeholder">Nenhuma novidade por enquanto. 🔔 Voltaremos a avisar quando surgir uma vaga nova perto de você.</p>`;
+  } else {
+    list.innerHTML = state.novas.map(v => `
+      <div class="nov-item" onclick="window.fecharNovidades(); window.abrirDetalhePub('${esc(v.id)}')">
+        <span class="nov-emoji">🆕</span>
+        <div style="min-width:0">
+          <div class="nov-title">${esc(v.cargo)}</div>
+          <div class="nov-sub">${esc(v.emp || "")} · a ${formatarDistancia(distVaga(v))}</div>
+        </div>
+      </div>`).join("");
+  }
+  $("novidades-modal").classList.add("show");
+  state.novas = [];
+  atualizarBadgeNovidades();
+};
+
+window.fecharNovidades = () => $("novidades-modal").classList.remove("show");
+
+
 
 
 // ===================================================================
@@ -797,10 +876,11 @@ function bindUI() {
   $("login-modal").addEventListener("click", (e) => { if (e.target.id === "login-modal") window.fecharLogin(); });
   $("job-modal").addEventListener("click", (e) => { if (e.target.id === "job-modal") window.fecharDetalhe(); });
   $("curriculo-modal").addEventListener("click", (e) => { if (e.target.id === "curriculo-modal") window.fecharCurriculo(); });
+  $("novidades-modal").addEventListener("click", (e) => { if (e.target.id === "novidades-modal") window.fecharNovidades(); });
 
   // ESC fecha modais
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { window.fecharLogin(); window.fecharDetalhe(); window.fecharCurriculo(); }
+    if (e.key === "Escape") { window.fecharLogin(); window.fecharDetalhe(); window.fecharCurriculo(); window.fecharNovidades(); }
   });
 }
 
