@@ -39,7 +39,7 @@ const state = {
   map: null,
   circle: null,
   userMarker: null,
-  markersLayer: L.layerGroup(),
+  markersLayer: null,
   markerById: new Map(),
   allVagas: [],          // vagas reais (Firestore) + flag _real
   demoMode: false,
@@ -155,10 +155,14 @@ function initMap() {
   }).addTo(state.map);
 
   state.userMarker = L.marker([state.userPos.lat, state.userPos.lng], {
-    icon: pinIcon("user"), zIndexOffset: 1000,
+    icon: userPinIcon(), zIndexOffset: 1000,
   }).addTo(state.map).bindPopup("Você está aqui");
 
+  // Camada de marcadores: usa clusters quando há muitos pins (com fallback seguro)
+  state.markersLayer = criarCamadaMarcadores();
   state.markersLayer.addTo(state.map);
+
+  montarLegenda();
 
   // Corrige o tamanho do container (resolve mapa cinza em abas/modos desktop)
   setTimeout(() => state.map.invalidateSize(), 300);
@@ -174,14 +178,98 @@ function initMap() {
   subscribeVagas();
 }
 
-function pinIcon(kind) {
+// Pino colorido por tipo de contratação
+function pinIcon(tipo) {
+  const st = estiloTipo(tipo);
   return L.divIcon({
-    className: "job-pin" + (kind === "user" ? " user-pin" : ""),
-    html: "<span></span>",
+    className: "job-pin",
+    html: `<div class="pin-shape" style="--pin-color:${st.cor}"><span class="pin-emoji">${st.emoji}</span></div>`,
     iconSize: [34, 42],
     iconAnchor: [17, 38],
     popupAnchor: [0, -34],
   });
+}
+
+// Pino do usuário (fixo)
+function userPinIcon() {
+  return L.divIcon({
+    className: "job-pin user-pin",
+    html: `<div class="pin-shape" style="--pin-color:var(--accent)"><span class="pin-emoji">📍</span></div>`,
+    iconSize: [34, 42],
+    iconAnchor: [17, 38],
+    popupAnchor: [0, -34],
+  });
+}
+
+// Cria a camada de marcadores. Usa clusterização quando o plugin está disponível,
+// caso contrário cai para um layerGroup simples (sem quebrar o app).
+function criarCamadaMarcadores() {
+  if (typeof L.markerClusterGroup === "function") {
+    return L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 55,
+      spiderfyOnMaxZoom: true,
+      iconCreateFunction: (cluster) => {
+        const n = cluster.getChildCount();
+        let tier = "s";
+        if (n >= 25) tier = "l"; else if (n >= 10) tier = "m";
+        return L.divIcon({
+          html: `<div class="cluster-badge cluster-${tier}">${n}</div>`,
+          className: "job-cluster",
+          iconSize: L.point(40, 40),
+        });
+      },
+    });
+  }
+  return L.layerGroup();
+}
+
+// -------------------------------------------------------------------
+//  Melhorias visuais do mapa: legenda, enquadrar vagas, realce cruzado
+// -------------------------------------------------------------------
+function montarLegenda() {
+  const list = $("legend-list");
+  if (!list) return;
+  list.innerHTML = Object.entries(TIPO_CORES).map(([tipo, st]) => `
+    <li>
+      <span class="legend-dot" style="background:${st.cor}">${st.emoji}</span>
+      <span>${tipo}</span>
+    </li>`).join("");
+  const km = $("legend-km");
+  if (km) km.textContent = state.km;
+}
+
+// Enquadra o mapa para mostrar todas as vagas visíveis + o usuário
+function ajustarAoVagas() {
+  const pts = [];
+  state.markerById.forEach(m => pts.push(m.getLatLng()));
+  if (pts.length === 0) {
+    mostrarAlerta("Nenhuma vaga para enquadrar no mapa.", true);
+    return;
+  }
+  pts.push(L.latLng(state.userPos.lat, state.userPos.lng));
+  const bounds = L.latLngBounds(pts);
+  state.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 });
+  mostrarAlerta(`🗺️ Mostrando ${pts.length - 1} vaga(s) no mapa.`, true);
+}
+
+// Realça (escala) o pino no mapa conforme o hover no card da lista
+function realcarPin(id, ligado) {
+  const m = state.markerById.get(id);
+  if (!m) return;
+  const el = m.getElement();
+  if (el) el.classList.toggle("pin-highlight", ligado);
+}
+
+// Destaca o card correspondente na lista quando o pino é clicado
+function destacarCard(id) {
+  document.querySelectorAll("#jobs-list .profile-card.highlight")
+    .forEach(c => c.classList.remove("highlight"));
+  const card = document.querySelector(`#jobs-list .profile-card[data-id="${CSS.escape(id)}"]`);
+  if (card) {
+    card.classList.add("highlight");
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
 }
 
 function pedirLocalizacao(silent = false) {
@@ -298,6 +386,8 @@ function filtrarEOrdenar() {
 function atualizar() {
   if ($("km-val")) $("km-val").innerText = state.km;
   if (state.circle) state.circle.setRadius(state.km * 1000);
+  const legKm = $("legend-km");
+  if (legKm) legKm.textContent = state.km;
   renderVagas(filtrarEOrdenar());
 }
 
@@ -349,10 +439,14 @@ function renderVagas(vagas) {
     `;
 
     card.addEventListener("click", () => abrirDetalhe(v));
+    // Passa o realce do card para o pino correspondente no mapa
+    card.addEventListener("mouseenter", () => realcarPin(v.id, true));
+    card.addEventListener("mouseleave", () => realcarPin(v.id, false));
     frag.appendChild(card);
 
-    // Marcador no mapa
-    const marker = L.marker([v.lat, v.lng], { icon: pinIcon() }).addTo(state.markersLayer);
+    // Marcador no mapa (cor/ícone conforme o tipo de contratação)
+    const marker = L.marker([v.lat, v.lng], { icon: pinIcon(v.tipo) }).addTo(state.markersLayer);
+    marker.on("click", () => destacarCard(v.id));
     marker.bindPopup(`
       <div>
         <p class="popup-title">${esc(v.cargo)}</p>
@@ -589,8 +683,10 @@ window.verNoMapa = (id) => {
   sb.dataset.state = "minimized";
   const m = state.markerById.get(id);
   if (m && state.map) {
+    destacarCard(id);
+    realcarPin(id, true);
     state.map.panTo(m.getLatLng());
-    setTimeout(() => m.openPopup(), 350);
+    setTimeout(() => { m.openPopup(); realcarPin(id, false); }, 350);
   }
 };
 
@@ -871,6 +967,14 @@ function bindUI() {
 
   // Localizar
   $("btn-localizar").addEventListener("click", () => pedirLocalizacao());
+
+  // Enquadrar todas as vagas visíveis no mapa
+  $("btn-fit").addEventListener("click", () => ajustarAoVagas());
+
+  // Legenda do mapa (abrir/fechar)
+  const legendBody = $("legend-body");
+  $("legend-toggle").addEventListener("click", () => legendBody.classList.toggle("hidden"));
+  $("legend-close").addEventListener("click", () => legendBody.classList.add("hidden"));
 
   // Fecha modais ao clicar no fundo
   $("login-modal").addEventListener("click", (e) => { if (e.target.id === "login-modal") window.fecharLogin(); });
